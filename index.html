@@ -7,436 +7,477 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --blu: #002f5f;
-  --blu2: #00519c;
-  --blu3: #d6e6f7;
-  --gold: #d4880c;
-  --gold2: #fdf3e3;
-  --green: #1b6e36;
-  --red: #b91c1c;
-  --gray: #475569;
-  --gray2: #94a3b8;
-  --bg: #f1f5f9;
-  --white: #ffffff;
-  --border: #cbd5e1;
-  --text: #0f172a;
-  --r: 6px;
-  --sh: 0 1px 6px rgba(0,47,95,.10);
-  --sh2: 0 4px 24px rgba(0,47,95,.14);
-}
+/* ── RESET & TOKENS ── */
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+:root{
+  --ink:#0d1b2a;
+  --ink2:#3d5166;
+  --ink3:#7a90a4;
+  --blue:#0047ab;
+  --blue2:#1a6fd4;
+  --blue-bg:#eef4fd;
+  --gold:#c47d0e;
+  --gold-bg:#fdf6e3;
+  --green:#1a6b3a;
+  --green-bg:#edf7f1;
+  --red:#c0392b;
+  --red-bg:#fdf0ee;
+  --bg:#f7f9fc;
+  --white:#ffffff;
+  --border:#dde4ed;
+  --border2:#c4cfdc;
+  --r:8px;
+  --r2:12px;
+  --sh:0 1px 4px rgba(13,27,42,.08),0 4px 16px rgba(13,27,42,.05);
+  --sh2:0 8px 40px rgba(13,27,42,.14);
+}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5}
 
 /* ── TOPBAR ── */
 .topbar{
-  background:var(--blu);
+  background:var(--blue);
+  height:60px;padding:0 32px;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;height:58px;
-  box-shadow:0 2px 10px rgba(0,0,0,.22);
   position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 12px rgba(0,71,171,.3);
 }
-.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-left{display:flex;align-items:center;gap:14px}
 .tb-logo{
-  width:36px;height:36px;border-radius:7px;
+  width:38px;height:38px;border-radius:9px;
   background:var(--gold);
   display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:15px;color:#fff;letter-spacing:-.5px;
-  flex-shrink:0;
+  font-weight:700;font-size:14px;color:#fff;letter-spacing:-.5px;flex-shrink:0;
 }
-.tb-name{font-size:15px;font-weight:600;color:#fff;line-height:1.1}
-.tb-sub{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.07em;text-transform:uppercase}
+.tb-title{font-size:15px;font-weight:600;color:#fff}
+.tb-sub{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em}
 .tb-right{display:flex;align-items:center;gap:10px}
-.tb-right label{font-size:11px;color:rgba(255,255,255,.55);white-space:nowrap}
-.tb-right input{
-  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-  color:#fff;border-radius:5px;padding:5px 10px;font-size:11px;
-  font-family:'DM Mono',monospace;width:240px;
+.key-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);flex-shrink:0;transition:background .3s}
+.key-dot.on{background:#4ade80}
+.key-dot.off{background:#f87171}
+.key-label{font-size:11px;color:rgba(255,255,255,.5)}
+.btn-settings{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  color:#fff;border-radius:6px;padding:6px 13px;
+  font-size:12px;font-weight:500;font-family:'Sora',sans-serif;
+  cursor:pointer;transition:background .18s;
 }
-.tb-right input::placeholder{color:rgba(255,255,255,.3)}
-.api-dot{width:9px;height:9px;border-radius:50%;background:#555;transition:background .3s;flex-shrink:0}
-.api-dot.on{background:#22c55e}
+.btn-settings:hover{background:rgba(255,255,255,.2)}
 
-/* ── STEPS ── */
-.steps{
-  display:flex;background:#fff;border-bottom:1px solid var(--border);
-  padding:0 28px;overflow-x:auto;gap:0;
+/* ── PAGE SWITCHER ── */
+.pager{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:0 32px;display:flex;gap:0;
 }
-.step{
-  display:flex;align-items:center;gap:8px;
-  padding:14px 22px;font-size:12.5px;font-weight:500;
-  color:var(--gray2);border-bottom:2.5px solid transparent;
-  cursor:pointer;white-space:nowrap;transition:all .18s;
+.pager-tab{
+  padding:16px 28px;font-size:13px;font-weight:500;color:var(--ink3);
+  border-bottom:3px solid transparent;cursor:pointer;
+  display:flex;align-items:center;gap:9px;transition:all .18s;white-space:nowrap;
 }
-.step:hover{color:var(--blu2)}
-.step.active{color:var(--blu);border-bottom-color:var(--blu);font-weight:600}
-.step.done{color:var(--green)}
-.sn{
-  width:20px;height:20px;border-radius:50%;
-  background:var(--border);color:#fff;
+.pager-tab:hover{color:var(--blue2)}
+.pager-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.pager-tab.done{color:var(--green)}
+.pager-tab .pn{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--border);color:var(--white);
   display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:700;flex-shrink:0;
+  font-size:10px;font-weight:700;flex-shrink:0;transition:background .18s;
 }
-.step.active .sn{background:var(--blu)}
-.step.done .sn{background:var(--green)}
+.pager-tab.active .pn{background:var(--blue)}
+.pager-tab.done .pn{background:var(--green)}
 
-/* ── LAYOUT ── */
-.main{max-width:1080px;margin:0 auto;padding:28px 20px}
+/* ── MAIN ── */
+.wrap{max-width:980px;margin:0 auto;padding:32px 24px}
 .page{display:none}.page.active{display:block}
 
-/* ── CARDS ── */
-.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:20px;overflow:hidden}
-.card-h{
-  background:var(--blu);color:#fff;
-  padding:12px 20px;display:flex;align-items:center;gap:10px;
+/* ── SECTION BLOCKS ── */
+.block{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--r2);box-shadow:var(--sh);
+  margin-bottom:20px;overflow:hidden;
 }
-.card-h h2{font-size:13.5px;font-weight:600}
-.card-h .pill{
-  background:var(--gold);color:#fff;
-  border-radius:10px;font-size:10px;padding:2px 9px;font-weight:700;margin-left:auto;
+.block-head{
+  padding:16px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
 }
-.card-b{padding:20px}
-.section-title{
-  font-size:11px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.08em;color:var(--blu2);
-  border-left:3px solid var(--gold);padding-left:8px;
-  margin:20px 0 12px;
+.block-head .ico{font-size:18px;line-height:1}
+.block-head h2{font-size:14px;font-weight:600;color:var(--ink)}
+.block-head .sub{font-size:12px;color:var(--ink3);margin-top:1px}
+.block-head .ml{margin-left:auto;display:flex;align-items:center;gap:8px}
+.block-body{padding:22px}
+
+/* ── UPLOAD ZONE ── */
+.drop-zone{
+  border:2px dashed var(--border2);border-radius:var(--r);
+  background:var(--blue-bg);padding:28px 20px;
+  text-align:center;cursor:pointer;transition:all .18s;
 }
-.section-title:first-child{margin-top:0}
+.drop-zone:hover,.drop-zone.over{border-color:var(--blue2);background:#ddeaf9}
+.drop-zone input{display:none}
+.drop-zone .dico{font-size:32px;margin-bottom:8px}
+.drop-zone h3{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:3px}
+.drop-zone p{font-size:12px;color:var(--ink3)}
+.file-pill{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--white);border:1px solid var(--border);
+  border-radius:20px;padding:5px 14px;font-size:12px;
+  color:var(--blue);font-weight:500;margin-top:10px;
+}
 
 /* ── FORMS ── */
-.fg{display:flex;flex-direction:column;gap:5px}
-.fg label{font-size:11px;font-weight:600;color:var(--blu);text-transform:uppercase;letter-spacing:.05em}
-input[type=text],input[type=email],input[type=date],input[type=number],textarea,select{
-  border:1px solid var(--border);border-radius:5px;padding:8px 11px;
-  font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:#fff;
-  width:100%;transition:border-color .18s,box-shadow .18s;
-}
-input:focus,textarea:focus,select:focus{
-  outline:none;border-color:var(--blu2);
-  box-shadow:0 0 0 3px rgba(0,81,156,.10);
-}
-textarea{resize:vertical;min-height:75px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
 .full{grid-column:1/-1}
-
-/* ── UPLOAD ── */
-.upload-z{
-  border:2px dashed var(--border);border-radius:var(--r);
-  padding:28px;text-align:center;cursor:pointer;
-  transition:all .18s;background:var(--blu3);
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.06em}
+.fg input,.fg select,.fg textarea{
+  border:1.5px solid var(--border);border-radius:6px;
+  padding:9px 12px;font-size:13px;font-family:'Sora',sans-serif;
+  color:var(--ink);background:var(--white);width:100%;
+  transition:border-color .18s,box-shadow .18s;
 }
-.upload-z:hover,.upload-z.dg{border-color:var(--blu2);background:#c8dcf2}
-.upload-z input[type=file]{display:none}
-.upload-z .ico{font-size:30px;margin-bottom:6px}
-.upload-z h3{font-size:14px;color:var(--blu);font-weight:600}
-.upload-z p{font-size:12px;color:var(--gray);margin-top:3px}
-.fpill{
-  display:inline-flex;align-items:center;gap:7px;
-  background:#fff;border:1px solid var(--border);
-  border-radius:16px;padding:5px 13px;font-size:12px;
-  color:var(--blu);margin-top:10px;font-weight:500;
+.fg input:focus,.fg select:focus,.fg textarea:focus{
+  outline:none;border-color:var(--blue2);
+  box-shadow:0 0 0 3px rgba(26,111,212,.1);
 }
+.fg textarea{resize:vertical;min-height:72px}
 
 /* ── BUTTONS ── */
 .btn{
   display:inline-flex;align-items:center;gap:7px;
-  padding:8px 18px;border-radius:5px;font-size:13px;
-  font-weight:600;font-family:'DM Sans',sans-serif;
-  cursor:pointer;border:none;transition:all .18s;
+  padding:9px 20px;border-radius:7px;
+  font-size:13px;font-weight:600;font-family:'Sora',sans-serif;
+  cursor:pointer;border:none;transition:all .18s;text-decoration:none;
 }
-.btn-primary{background:var(--blu);color:#fff}.btn-primary:hover{background:var(--blu2)}
-.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:#b8710a}
-.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#145229}
-.btn-outline{background:#fff;color:var(--blu);border:1.5px solid var(--blu)}.btn-outline:hover{background:var(--blu3)}
-.btn-ghost{background:none;border:none;color:var(--gray);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px}.btn-ghost:hover{background:var(--bg)}
-.btn-danger{background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:3px 7px;border-radius:4px}.btn-danger:hover{background:#fee2e2}
-.btn-sm{padding:5px 13px;font-size:12px}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.btn-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:20px}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue2)}
+.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:#a86a0a}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#155c31}
+.btn-ghost{background:var(--bg);border:1.5px solid var(--border);color:var(--ink2)}.btn-ghost:hover{border-color:var(--border2);background:#edf0f5}
+.btn-link{background:none;border:none;color:var(--blue2);font-size:13px;font-weight:500;cursor:pointer;padding:4px 0;font-family:'Sora',sans-serif}
+.btn-link:hover{text-decoration:underline}
+.btn-icon{background:none;border:none;cursor:pointer;color:var(--ink3);font-size:15px;padding:4px 6px;border-radius:5px;transition:all .15s}
+.btn-icon:hover{background:var(--red-bg);color:var(--red)}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:24px}
 
 /* ── ALERTS ── */
-.alert{padding:10px 14px;border-radius:5px;font-size:12.5px;font-weight:500;display:flex;align-items:start;gap:9px;margin-bottom:14px}
-.alert-info{background:var(--blu3);color:var(--blu);border-left:3px solid var(--blu2)}
-.alert-ok{background:#dcfce7;color:var(--green);border-left:3px solid var(--green)}
-.alert-warn{background:var(--gold2);color:#92400e;border-left:3px solid var(--gold)}
-.alert-err{background:#fee2e2;color:var(--red);border-left:3px solid var(--red)}
+.alert{
+  padding:11px 15px;border-radius:7px;
+  font-size:12.5px;font-weight:500;
+  display:flex;align-items:flex-start;gap:9px;margin-bottom:16px;
+  border-left:3px solid;
+}
+.alert-info{background:var(--blue-bg);color:var(--blue);border-color:var(--blue2)}
+.alert-ok{background:var(--green-bg);color:var(--green);border-color:var(--green)}
+.alert-warn{background:var(--gold-bg);color:var(--gold);border-color:var(--gold)}
+.alert-err{background:var(--red-bg);color:var(--red);border-color:var(--red)}
 
-/* ── TABLES ── */
-.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
-.tbl th{
-  background:var(--blu);color:#fff;
-  padding:9px 11px;text-align:left;font-size:11px;
-  font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;
+/* ── MANSIONE CARD ── */
+.mans-card{
+  border:1.5px solid var(--border);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:10px;
+  transition:border-color .18s;background:var(--white);
 }
-.tbl td{padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:middle}
-.tbl tr:hover td{background:var(--blu3)}
-.tbl tr.sel td{background:#ecfdf5}
-.tbl input[type=number]{width:68px;padding:4px 7px;font-size:12px;border:1px solid var(--border);border-radius:4px}
-.tbl input[type=checkbox]{width:15px;height:15px;cursor:pointer}
-.num-r{text-align:right}
-.bold{font-weight:700}
-.price-cell{font-weight:700;color:var(--blu);text-align:right}
-.disc-badge{
-  display:inline-block;background:var(--gold);color:#fff;
-  border-radius:9px;font-size:9px;padding:1px 6px;font-weight:700;margin-left:3px;
+.mans-card:hover{border-color:var(--border2)}
+.mans-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.mans-name{font-weight:600;font-size:14px;color:var(--ink)}
+.mans-meta{font-size:12px;color:var(--ink3);margin-top:2px}
+.mans-acc{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 11px;border-radius:20px;font-size:11.5px;font-weight:500;
 }
-.tag{
-  display:inline-flex;align-items:center;background:var(--blu3);
-  color:var(--blu);border-radius:10px;padding:2px 9px;font-size:10.5px;font-weight:600;margin:2px;
+.chip-blue{background:var(--blue-bg);color:var(--blue)}
+.chip-gold{background:var(--gold-bg);color:var(--gold)}
+.chip-green{background:var(--green-bg);color:var(--green)}
+.chip-gray{background:#f1f4f8;color:var(--ink3)}
+.acc-warn{
+  font-size:11px;color:var(--gold);
+  background:var(--gold-bg);border-radius:5px;
+  padding:4px 10px;margin-top:6px;display:inline-block;
 }
-.tag-gold{background:var(--gold2);color:#92400e}
-.tag-green{background:#dcfce7;color:var(--green)}
 
-/* ── MODAL-style LOADING ── */
+/* ── SEDE ROW ── */
+.sede-block{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;margin-bottom:10px;
+}
+.sede-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sede-title{font-weight:600;font-size:13px;color:var(--ink)}
+.sede-mansioni{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ── PRICE TABLE ── */
+.ptable{width:100%;border-collapse:collapse;font-size:12.5px}
+.ptable th{
+  background:var(--blue);color:#fff;
+  padding:10px 12px;text-align:left;
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;
+  white-space:nowrap;
+}
+.ptable th.green-h{background:var(--green)}
+.ptable td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ptable tr:last-child td{border-bottom:none}
+.ptable tr:hover td{background:#f8fafc}
+.ptable tr.sel td{background:var(--green-bg)}
+.ptable .nr{text-align:right}
+.ptable .nc{text-align:center}
+.price-ref{color:var(--ink3);font-size:12px}
+.price-net{
+  font-weight:700;color:var(--green);
+}
+.pct-input{
+  width:62px;padding:5px 7px;font-size:12px;
+  border:1.5px solid var(--border);border-radius:5px;
+  font-family:'JetBrains Mono',monospace;text-align:right;
+  transition:border-color .15s;
+}
+.pct-input:focus{outline:none;border-color:var(--blue2)}
+.net-input{
+  width:76px;padding:5px 7px;font-size:12px;font-weight:600;
+  border:1.5px solid #9fd4b0;border-radius:5px;
+  background:var(--green-bg);color:var(--green);
+  font-family:'JetBrains Mono',monospace;text-align:right;
+  transition:border-color .15s;
+}
+.net-input:focus{outline:none;border-color:var(--green)}
+.qty-input{
+  width:52px;padding:5px 7px;font-size:12px;
+  border:1.5px solid var(--border);border-radius:5px;
+  font-family:'JetBrains Mono',monospace;text-align:center;
+}
+.section-divider{
+  display:flex;align-items:center;gap:12px;
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--blue);
+  margin:22px 0 14px;
+}
+.section-divider::before,.section-divider::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+.totale-bar{
+  background:var(--blue);color:#fff;
+  border-radius:var(--r);padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;margin-top:20px;
+}
+.tot-item{text-align:center}
+.tot-item .v{font-size:20px;font-weight:700}
+.tot-item .l{font-size:10px;opacity:.6;text-transform:uppercase;letter-spacing:.06em}
+.tot-sep{width:1px;height:40px;background:rgba(255,255,255,.2)}
+
+/* ── MODALE ── */
+.modal-bg{
+  display:none;position:fixed;inset:0;
+  background:rgba(13,27,42,.5);backdrop-filter:blur(4px);
+  z-index:500;align-items:center;justify-content:center;padding:20px;
+}
+.modal-bg.open{display:flex}
+.modal-box{
+  background:var(--white);border-radius:var(--r2);
+  padding:32px 36px;max-width:480px;width:100%;
+  box-shadow:var(--sh2);
+}
+.modal-box h3{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.modal-box p{font-size:12.5px;color:var(--ink3);margin-bottom:20px;line-height:1.6}
+
+/* ── LOADING ── */
 .loading{
   display:none;position:fixed;inset:0;
-  background:rgba(0,47,95,.45);backdrop-filter:blur(3px);
+  background:rgba(13,27,42,.45);backdrop-filter:blur(3px);
   z-index:999;align-items:center;justify-content:center;
 }
 .loading.show{display:flex}
-.lbox{
-  background:#fff;border-radius:10px;padding:36px 44px;
-  text-align:center;box-shadow:var(--sh2);
-}
-.lbox .spin{
-  width:44px;height:44px;border:3.5px solid var(--blu3);
-  border-top-color:var(--blu);border-radius:50%;
+.lbox{background:var(--white);border-radius:var(--r2);padding:36px 44px;text-align:center;box-shadow:var(--sh2)}
+.spin{
+  width:44px;height:44px;border:3.5px solid var(--blue-bg);
+  border-top-color:var(--blue);border-radius:50%;
   animation:spin .85s linear infinite;margin:0 auto 14px;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.lbox p{font-size:14px;font-weight:600;color:var(--blu)}
-.lbox small{font-size:11px;color:var(--gray)}
+.lbox p{font-size:14px;font-weight:600;color:var(--blue)}
+.lbox small{font-size:11.5px;color:var(--ink3)}
 
-/* ── MANSIONE ROWS ── */
-.mans-row{
-  display:flex;align-items:flex-start;gap:12px;
-  padding:12px 0;border-bottom:1px solid var(--border);
+/* ── MISC ── */
+.tag-ai{
+  display:inline-flex;align-items:center;gap:4px;
+  background:#fff8e1;color:#b45309;border:1px solid #fcd34d;
+  border-radius:12px;font-size:10.5px;font-weight:600;padding:2px 9px;
 }
-.mans-row:last-child{border-bottom:none}
-.mans-info{flex:1}
-.mans-name{font-weight:600;font-size:13.5px}
-.mans-acc{font-size:11.5px;color:var(--gray);margin-top:5px}
-
-/* ── SEDI TABLE ── */
-.sede-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap}
-.sede-row .fg{flex:1;min-width:130px}
-
-/* ── SUMMARY BOX ── */
-.sum-box{
-  background:var(--blu);color:#fff;border-radius:var(--r);
-  padding:18px 22px;display:flex;flex-wrap:wrap;gap:16px;
-  align-items:center;margin-bottom:22px;
-}
-.sum-item{text-align:center;flex:1;min-width:90px}
-.sum-item .v{font-size:22px;font-weight:700}
-.sum-item .l{font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:.06em}
-.sum-div{width:1px;height:44px;background:rgba(255,255,255,.18)}
-
-/* ── OFFERTA SECTIONS ── */
-.offer-section{margin-bottom:24px}
-.offer-cat-header{
-  display:flex;align-items:center;gap:10px;
-  background:var(--blu3);border-radius:5px;
-  padding:9px 14px;margin-bottom:10px;
-  font-weight:700;font-size:12px;color:var(--blu);
-  text-transform:uppercase;letter-spacing:.06em;
-}
+.divider{height:1px;background:var(--border);margin:20px 0}
 .scroll-x{overflow-x:auto}
-
-/* ── MODAL ANTEPRIMA ── */
-#prevModal{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.55);z-index:500;
-  overflow-y:auto;padding:30px 20px;
+.note-area{
+  width:100%;min-height:90px;border:1.5px solid var(--border);
+  border-radius:6px;padding:10px 13px;font-size:13px;
+  font-family:'Sora',sans-serif;color:var(--ink);resize:vertical;
 }
-#prevModal.show{display:block}
-.modal-box{
-  background:#fff;max-width:820px;margin:0 auto;
-  border-radius:10px;box-shadow:var(--sh2);overflow:hidden;
-}
-.modal-close{
-  position:sticky;top:0;background:var(--blu);color:#fff;
-  padding:10px 20px;display:flex;justify-content:space-between;
-  align-items:center;font-weight:600;font-size:13px;z-index:10;
-}
-.modal-close button{background:none;border:none;color:#fff;font-size:18px;cursor:pointer}
-.prev-body{padding:30px;font-size:12px;line-height:1.6}
+.note-area:focus{outline:none;border-color:var(--blue2)}
 
 @media(max-width:680px){
-  .grid2,.grid3{grid-template-columns:1fr}
-  .topbar{padding:0 14px}
-  .tb-right input{width:150px}
-  .main{padding:14px}
-  .sum-box{flex-direction:column;align-items:flex-start}
-  .sum-div{display:none}
+  .grid2,.grid3,.grid4{grid-template-columns:1fr}
+  .topbar{padding:0 16px}
+  .wrap{padding:16px}
+  .totale-bar{flex-direction:column;align-items:flex-start}
+  .tot-sep{display:none}
 }
 </style>
 </head>
 <body>
 
 <!-- LOADING -->
-<div class="loading" id="loadingOverlay">
+<div class="loading" id="loader">
   <div class="lbox">
     <div class="spin"></div>
-    <p id="loadingMsg">Elaborazione...</p>
-    <small>Claude AI sta analizzando il documento</small>
+    <p id="loaderMsg">Elaborazione...</p>
+    <small>Gemini AI sta analizzando il documento</small>
   </div>
 </div>
 
-<!-- ANTEPRIMA MODAL -->
-<div id="prevModal">
-  <div class="modal-box">
-    <div class="modal-close">
-      <span>Anteprima Preventivo</span>
-      <button onclick="closeModal()">✕</button>
+<!-- MODALE ANTEPRIMA -->
+<div class="modal-bg" id="prevModal" onclick="if(event.target===this)closePrev()">
+  <div style="background:var(--white);border-radius:var(--r2);max-width:860px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--sh2)">
+    <div style="position:sticky;top:0;background:var(--blue);color:#fff;padding:12px 22px;display:flex;justify-content:space-between;align-items:center;border-radius:var(--r2) var(--r2) 0 0">
+      <span style="font-weight:600;font-size:14px">Anteprima Preventivo</span>
+      <button onclick="closePrev()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">×</button>
     </div>
-    <div class="prev-body" id="prevBody"></div>
+    <div id="prevBody" style="padding:32px;font-size:12px;line-height:1.7"></div>
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════ -->
 <!-- TOPBAR -->
+<!-- ══════════════════════════════════════════════════════ -->
 <div class="topbar">
-  <div class="tb-brand">
+  <div class="tb-left">
     <div class="tb-logo">DC</div>
     <div>
-      <div class="tb-name">Preventivatore Automatico</div>
-      <div class="tb-sub">Delivery Care Srl · Medicina del Lavoro</div>
+      <div class="tb-title">Preventivatore</div>
+      <div class="tb-sub">Delivery Care · Medicina del Lavoro</div>
     </div>
   </div>
-  <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.04em">Powered by Gemini AI</div>
+
 </div>
 
-<!-- STEPS -->
-<div class="steps">
-  <div class="step active" id="tab0" onclick="goStep(0)"><div class="sn">1</div>Listino & Tariffe</div>
-  <div class="step" id="tab1" onclick="goStep(1)"><div class="sn">2</div>Dati Cliente</div>
-  <div class="step" id="tab2" onclick="goStep(2)"><div class="sn">3</div>Mansioni & Sedi</div>
-  <div class="step" id="tab3" onclick="goStep(3)"><div class="sn">4</div>Componi Offerta</div>
-  <div class="step" id="tab4" onclick="goStep(4)"><div class="sn">5</div>Genera PDF</div>
+<!-- PAGER -->
+<div class="pager">
+  <div class="pager-tab active" id="ptab0" onclick="goPage(0)">
+    <div class="pn">1</div> Dati Cliente & Mansioni
+  </div>
+  <div class="pager-tab" id="ptab1" onclick="goPage(1)">
+    <div class="pn">2</div> Prezzi & Genera PDF
+  </div>
 </div>
 
-<div class="main">
+<div class="wrap">
 
-<!-- ══════════════ STEP 1: LISTINO ══════════════ -->
-<div class="page active" id="page0">
-  <div class="card">
-    <div class="card-h">
-      <span>📋</span><h2>Listino Prezzi & Tariffe</h2>
-      <span class="pill">Step 1</span>
-    </div>
-    <div class="card-b">
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGINA 1 — DATI CLIENTE & MANSIONI                -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="page active" id="pg0">
 
-      <div class="alert alert-ok">
-        ✅ Listino standard Delivery Care precaricato. Modifica prezzi e sconti direttamente nella tabella, oppure <strong>sostituiscilo</strong> caricando il tuo Excel/CSV.
+  <!-- LISTINO (solo pulsante) -->
+  <div class="block">
+    <div class="block-head">
+      <span class="ico">📋</span>
+      <div>
+        <h2>Listino prezzi</h2>
+        <div class="sub">Listino Delivery Care precaricato · sostituisci se necessario</div>
       </div>
-
-      <!-- Barra azioni listino -->
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
-        <button class="btn btn-outline btn-sm" onclick="document.getElementById('listinoFile').click()">
-          📂 Sostituisci con Excel/CSV
-        </button>
-        <button class="btn btn-ghost btn-sm" onclick="resetListino()">
-          ↺ Ripristina listino standard
-        </button>
+      <div class="ml">
+        <span id="listinoStatus" style="font-size:12px;color:var(--green);font-weight:500">✅ Listino standard attivo</span>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('listinoFile').click()">📂 Sostituisci con Excel/CSV</button>
         <input type="file" id="listinoFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="loadListino(this.files[0])">
-        <div id="listinoFname" style="font-size:12px;color:var(--gray)"></div>
-        <span style="margin-left:auto;font-size:12px;color:var(--gray)">
-          Spunta ✓ le voci da includere nel preventivo
-        </span>
       </div>
-
-      <!-- TABELLA LISTINO per categoria -->
-      <div id="listinoWrap">
-        <div id="listinoContent"></div>
-      </div>
-
     </div>
   </div>
-  <div class="btn-row">
-    <span></span>
-    <button class="btn btn-primary" onclick="goStep(1)">Avanti: Dati Cliente →</button>
-  </div>
-</div>
 
-<!-- ══════════════ STEP 2: DATI CLIENTE ══════════════ -->
-<div class="page" id="page1">
-  <div class="card">
-    <div class="card-h"><span>🏢</span><h2>Dati Azienda Cliente</h2><span class="pill">Step 2</span></div>
-    <div class="card-b">
-
-      <div class="section-title">Carica documento (opzionale)</div>
-      <div class="upload-z" id="docZone" onclick="document.getElementById('docFile').click()"
-           ondragover="dg(event,'docZone')" ondragleave="dl(event,'docZone')" ondrop="dropDoc(event)">
-        <div class="ico">📄</div>
-        <h3>Trascina richiesta preventivo / DVR / email</h3>
-        <p>PDF · TXT · DOCX — Claude estrarrà automaticamente dati azienda e mansioni</p>
-        <input type="file" id="docFile" accept=".pdf,.txt,.doc,.docx" onchange="loadDoc(this.files[0])">
+  <!-- CARICAMENTO DOCUMENTO -->
+  <div class="block">
+    <div class="block-head">
+      <span class="ico">📄</span>
+      <div>
+        <h2>Carica richiesta preventivo / DVR</h2>
+        <div class="sub">Claude estrae automaticamente dati azienda, sedi e mansioni</div>
+      </div>
+    </div>
+    <div class="block-body">
+      <div class="drop-zone" id="docZone" onclick="document.getElementById('docFile').click()"
+           ondragover="dzOver(event,'docZone')" ondragleave="dzOut(event,'docZone')" ondrop="dzDrop(event)">
+        <div class="dico">📎</div>
+        <h3>Trascina PDF, DVR o testo della richiesta</h3>
+        <p>PDF · TXT · DOCX — Gemini AI estrarrà dati azienda, mansioni e sedi</p>
+        <input type="file" id="docFile" accept=".pdf,.txt,.docx" onchange="loadDoc(this.files[0])">
         <div id="docFname"></div>
       </div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn btn-primary btn-sm" id="extractBtn" onclick="extractFromDoc()" disabled>🤖 Estrai dati con Claude AI</button>
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-blue btn-sm" id="extractBtn" onclick="extractDoc()" disabled>🤖 Estrai con Gemini AI</button>
         <button class="btn btn-ghost btn-sm" onclick="clearDoc()">✕ Rimuovi</button>
+        <span style="font-size:12px;color:var(--ink3)">oppure compila manualmente i campi sotto</span>
       </div>
+    </div>
+  </div>
 
-      <div class="section-title" style="margin-top:20px">Dati azienda</div>
+  <!-- DATI AZIENDA -->
+  <div class="block">
+    <div class="block-head">
+      <span class="ico">🏢</span>
+      <div><h2>Dati azienda cliente</h2></div>
+      <div class="ml">
+        <div class="fg" style="flex-direction:row;align-items:center;gap:8px">
+          <label style="margin:0;white-space:nowrap">Multi-sede</label>
+          <input type="checkbox" id="isMultisede" onchange="toggleMultisede()" style="width:18px;height:18px;cursor:pointer">
+        </div>
+      </div>
+    </div>
+    <div class="block-body">
       <div class="grid2">
         <div class="fg"><label>Ragione Sociale *</label><input type="text" id="c_rag" placeholder="es. Omega Ambiente Srl"></div>
-        <div class="fg"><label>P.IVA / C.F. *</label><input type="text" id="c_piva" placeholder="12345678901"></div>
+        <div class="fg"><label>P.IVA / C.F.</label><input type="text" id="c_piva" placeholder="12345678901"></div>
         <div class="fg"><label>Sede Legale</label><input type="text" id="c_sede" placeholder="Via Roma 1, 00100 Roma"></div>
         <div class="fg"><label>Settore / ATECO</label><input type="text" id="c_ateco" placeholder="es. Pulizie industriali (81.21)"></div>
         <div class="fg"><label>Referente</label><input type="text" id="c_ref" placeholder="Nome Cognome"></div>
-        <div class="fg"><label>Email referente</label><input type="email" id="c_email" placeholder="referente@azienda.it"></div>
+        <div class="fg"><label>Email</label><input type="email" id="c_email" placeholder="referente@azienda.it"></div>
         <div class="fg"><label>Telefono</label><input type="text" id="c_tel" placeholder="+39 06 1234567"></div>
-        <div class="fg"><label>N° lavoratori totali</label><input type="number" id="c_nlav" placeholder="0"></div>
-        <div class="fg full"><label>Note / contesto</label><textarea id="c_note" placeholder="Informazioni aggiuntive, esigenze particolari..."></textarea></div>
-      </div>
-
-      <div class="section-title">Intestazione preventivo</div>
-      <div class="grid3">
-        <div class="fg"><label>N° Offerta</label><input type="text" id="p_num" placeholder="DC-2026-001"></div>
-        <div class="fg"><label>Data</label><input type="date" id="p_data"></div>
-        <div class="fg"><label>Città emissione</label><input type="text" id="p_citta" value="Milano"></div>
-        <div class="fg"><label>Validità (giorni)</label><input type="number" id="p_val" value="30"></div>
-        <div class="fg"><label>Redatto da</label><input type="text" id="p_redattore" placeholder="es. Giulio Tifoni"></div>
-        <div class="fg"><label>Tipo offerta</label>
-          <select id="p_tipo">
-            <option>Sorveglianza Sanitaria</option>
-            <option>Servizi integrati: Formazione - Sorveglianza Sanitaria</option>
-            <option>Sorveglianza Sanitaria e Formazione</option>
-            <option>Nomina Medico Competente</option>
-          </select>
-        </div>
+        <div class="fg"><label>N° lavoratori totali</label><input type="number" id="c_nlav" placeholder="0" min="0"></div>
       </div>
     </div>
   </div>
-  <div class="btn-row">
-    <button class="btn btn-outline" onclick="goStep(0)">← Indietro</button>
-    <button class="btn btn-primary" onclick="goStep(2)">Avanti: Mansioni & Sedi →</button>
+
+  <!-- SEDI (multi-sede) -->
+  <div class="block" id="sediBlock" style="display:none">
+    <div class="block-head">
+      <span class="ico">📍</span>
+      <div><h2>Sedi operative</h2><div class="sub">Dettaglio lavoratori per sede (Allegato A)</div></div>
+      <div class="ml"><button class="btn btn-ghost btn-sm" onclick="addSede()">➕ Aggiungi sede</button></div>
+    </div>
+    <div class="block-body">
+      <div id="sediList">
+        <div class="alert alert-info">ℹ️ Aggiungi le sedi con il numero di lavoratori per mansione.</div>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- ══════════════ STEP 3: MANSIONI & SEDI ══════════════ -->
-<div class="page" id="page2">
-  <div class="card">
-    <div class="card-h"><span>⚕️</span><h2>Mansioni & Sedi Operative</h2><span class="pill">Step 3</span></div>
-    <div class="card-b">
+  <!-- MANSIONI -->
+  <div class="block">
+    <div class="block-head">
+      <span class="ico">👤</span>
+      <div><h2>Mansioni & Accertamenti</h2><div class="sub">Inserisci le mansioni — l'AI suggerisce gli accertamenti secondo D.Lgs 81/2008</div></div>
+    </div>
+    <div class="block-body">
 
-      <div class="section-title">Mansioni e accertamenti</div>
-      <div id="mansioniList"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:12px">
+      <!-- Form aggiungi mansione -->
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border)">
         <div class="fg" style="flex:2;min-width:180px">
           <label>Mansione</label>
-          <input type="text" id="newMans" placeholder="es. Operatore di vigilanza armata">
+          <input type="text" id="newMansNome" placeholder="es. Addetto alle pulizie" onkeydown="if(event.key==='Enter')addMans()">
         </div>
-        <div class="fg" style="width:90px">
-          <label>Lavoratori</label>
+        <div class="fg" style="width:100px">
+          <label>N° lavoratori</label>
           <input type="number" id="newMansN" value="1" min="1">
         </div>
-        <div class="fg" style="width:110px">
+        <div class="fg" style="width:130px">
           <label>Periodicità</label>
           <select id="newMansPer">
             <option>12 mesi</option>
@@ -445,415 +486,244 @@ textarea{resize:vertical;min-height:75px}
             <option>Su richiesta</option>
           </select>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="addMans()">➕ Aggiungi</button>
-        <button class="btn btn-primary btn-sm" id="aiMansBtn" onclick="analyzeAI()">🤖 Analizza con AI</button>
+        <div style="display:flex;gap:8px;padding-bottom:1px">
+          <button class="btn btn-ghost btn-sm" onclick="addMans()">➕ Aggiungi</button>
+          <button class="btn btn-blue btn-sm" onclick="analyzeAI()">🤖 Analizza con AI</button>
+        </div>
       </div>
 
-      <div class="section-title" style="margin-top:24px">Sedi operative (Allegato A)</div>
-      <div class="alert alert-info" style="margin-bottom:12px">
-        ℹ️ Inserisci le sedi del cliente con il numero di lavoratori per mansione — sarà il dettaglio dell'Allegato A nel PDF.
-      </div>
-      <div id="sediList"></div>
-      <button class="btn btn-outline btn-sm" onclick="addSede()">➕ Aggiungi sede</button>
-
-    </div>
-  </div>
-  <div class="btn-row">
-    <button class="btn btn-outline" onclick="goStep(1)">← Indietro</button>
-    <button class="btn btn-primary" onclick="goStep(3);buildOffer()">Avanti: Componi Offerta →</button>
-  </div>
-</div>
-
-<!-- ══════════════ STEP 4: COMPONI OFFERTA ══════════════ -->
-<div class="page" id="page3">
-  <div class="card">
-    <div class="card-h"><span>💶</span><h2>Composizione Offerta Economica</h2><span class="pill">Step 4</span></div>
-    <div class="card-b">
-      <div class="alert alert-info">Seleziona le voci da includere nel preventivo. Modifica quantità, sconti e prezzi dove necessario.</div>
-      <div id="offerContent"></div>
+      <div id="mansList"></div>
     </div>
   </div>
 
-  <!-- Formazione (opzionale) -->
-  <div class="card">
-    <div class="card-h"><span>🎓</span><h2>Formazione (opzionale)</h2>
-      <label style="display:flex;align-items:center;gap:7px;margin-left:auto;font-size:12px;cursor:pointer">
-        <input type="checkbox" id="inclFormazione" onchange="toggleFormazione()"> Includi formazione nell'offerta
-      </label>
+  <!-- INTESTAZIONE PREVENTIVO -->
+  <div class="block">
+    <div class="block-head">
+      <span class="ico">📝</span>
+      <div><h2>Intestazione preventivo</h2></div>
     </div>
-    <div class="card-b" id="formazioneSection" style="display:none">
-      <div id="formazioneContent"></div>
-    </div>
-  </div>
-
-  <div class="btn-row">
-    <button class="btn btn-outline" onclick="goStep(2)">← Indietro</button>
-    <button class="btn btn-primary" onclick="goStep(4);updateSummary()">Avanti: Genera PDF →</button>
-  </div>
-</div>
-
-<!-- ══════════════ STEP 5: GENERA PDF ══════════════ -->
-<div class="page" id="page4">
-  <div class="card">
-    <div class="card-h"><span>📑</span><h2>Riepilogo & Generazione PDF</h2><span class="pill">Step 5</span></div>
-    <div class="card-b">
-
-      <div class="sum-box" id="sumBox">
-        <div class="sum-item"><div class="v" id="sLav">—</div><div class="l">Lavoratori</div></div>
-        <div class="sum-div"></div>
-        <div class="sum-item"><div class="v" id="sSedi">—</div><div class="l">Sedi</div></div>
-        <div class="sum-div"></div>
-        <div class="sum-item"><div class="v" id="sVoci">—</div><div class="l">Voci offerta</div></div>
-        <div class="sum-div"></div>
-        <div class="sum-item"><div class="v" id="sLordo">€ —</div><div class="l">Totale lordo</div></div>
-        <div class="sum-div"></div>
-        <div class="sum-item"><div class="v" id="sSconto">€ —</div><div class="l">Sconto</div></div>
-        <div class="sum-div"></div>
-        <div class="sum-item"><div class="v" id="sNetto" style="color:var(--gold)">€ —</div><div class="l">Totale netto</div></div>
-      </div>
-
-      <div class="section-title">Note e condizioni di fornitura</div>
-      <textarea id="p_note" style="min-height:120px"></textarea>
-
-      <div class="section-title" style="margin-top:16px">Termini</div>
+    <div class="block-body">
       <div class="grid3">
-        <div class="fg"><label>Decorrenza incarico</label><input type="text" id="p_dec" placeholder="Da concordare"></div>
-        <div class="fg"><label>Durata</label><input type="text" id="p_dur" value="Annuale"></div>
-        <div class="fg"><label>Area di competenza</label><input type="text" id="p_area" placeholder="es. Nazionale / Roma / Milano"></div>
-        <div class="fg"><label>Penale ON SITE</label><input type="text" id="p_penale_os" value="€ 40,00 per il 100% degli oltre 25% convocati non presentati"></div>
-        <div class="fg"><label>Penale C/O studi</label><input type="text" id="p_penale_st" value="100% costo visita (esclusi accertamenti) per ogni lavoratore non presentato"></div>
+        <div class="fg"><label>N° Offerta</label><input type="text" id="p_num" placeholder="DC-2026-001"></div>
+        <div class="fg"><label>Data</label><input type="date" id="p_data"></div>
+        <div class="fg"><label>Città emissione</label><input type="text" id="p_citta" value="Milano"></div>
+        <div class="fg"><label>Tipo offerta</label>
+          <select id="p_tipo">
+            <option>Sorveglianza Sanitaria</option>
+            <option>Servizi integrati: Formazione - Sorveglianza Sanitaria</option>
+            <option>Sorveglianza Sanitaria e Formazione</option>
+            <option>Nomina Medico Competente</option>
+          </select>
+        </div>
+        <div class="fg"><label>Validità (giorni)</label><input type="number" id="p_val" value="30"></div>
+        <div class="fg"><label>Redatto da</label><input type="text" id="p_redattore" placeholder="es. Giulio Tifoni"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <span></span>
+    <button class="btn btn-blue" onclick="goPage(1);buildPricePage()">Avanti: Prezzi & PDF →</button>
+  </div>
+</div><!-- /pg0 -->
+
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGINA 2 — PREZZI & GENERA PDF                    -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="page" id="pg1">
+
+  <div id="priceContent"></div>
+
+  <!-- TOTALE -->
+  <div class="totale-bar" id="totaleBar">
+    <div class="tot-item"><div class="v" id="tLav">—</div><div class="l">Lavoratori</div></div>
+    <div class="tot-sep"></div>
+    <div class="tot-item"><div class="v" id="tVoci">—</div><div class="l">Voci selezionate</div></div>
+    <div class="tot-sep"></div>
+    <div class="tot-item"><div class="v" id="tLordo">€ —</div><div class="l">Totale lordo</div></div>
+    <div class="tot-sep"></div>
+    <div class="tot-item"><div class="v" id="tSconto">€ —</div><div class="l">Sconto totale</div></div>
+    <div class="tot-sep"></div>
+    <div class="tot-item"><div class="v" id="tNetto" style="color:#fde68a">€ —</div><div class="l">Totale netto</div></div>
+  </div>
+
+  <!-- NOTE & TERMINI -->
+  <div class="block" style="margin-top:20px">
+    <div class="block-head">
+      <span class="ico">📋</span>
+      <div><h2>Note & Condizioni di fornitura</h2></div>
+    </div>
+    <div class="block-body">
+      <textarea class="note-area full" id="p_note"></textarea>
+      <div class="divider"></div>
+      <div class="grid3">
+        <div class="fg"><label>Penale ON SITE</label><input type="text" id="p_pen_os" value="€ 40 per il 100% degli oltre 25% non presentati"></div>
+        <div class="fg"><label>Penale c/o studio</label><input type="text" id="p_pen_st" value="100% visita per ogni lavoratore non presentato"></div>
         <div class="fg"><label>Disdetta</label><input type="text" id="p_disdetta" value="90 giorni"></div>
         <div class="fg"><label>Fatturazione</label><input type="text" id="p_fatt" value="Fine mese"></div>
         <div class="fg"><label>Pagamento</label><input type="text" id="p_pag" value="30 GG DF"></div>
-        <div class="fg"><label>Firma Delivery Care</label><input type="text" id="p_firma" value="DELIVERY CARE S.r.l – S.B."></div>
+        <div class="fg"><label>Area competenza</label><input type="text" id="p_area" placeholder="es. Nazionale"></div>
       </div>
-
     </div>
   </div>
 
   <div class="btn-row">
-    <button class="btn btn-outline" onclick="goStep(3)">← Indietro</button>
+    <button class="btn btn-ghost" onclick="goPage(0)">← Indietro</button>
     <div style="display:flex;gap:10px">
       <button class="btn btn-gold" onclick="showPreview()">👁 Anteprima</button>
       <button class="btn btn-green" onclick="generatePDF()">⬇ Scarica PDF</button>
     </div>
   </div>
-</div>
 
-</div><!-- /main -->
+</div><!-- /pg1 -->
+
+</div><!-- /wrap -->
 
 <script>
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // STATE
-// ═══════════════════════════════════════════════════════════
-let listino = {};    // {categoria: [{nome, prezzoOS, prezzoST, um, sconto, qty, sel}]}
-let mansioni = [];   // [{nome, n, periodicita, accertamenti, aiSuggested}]
-let sedi = [];       // [{citta, mansioni:[{nome,n}]}]
-let offerVoci = [];  // [{cat, nome, um, prezzoOS, prezzoST, modalita, sconto, qty, sel, isFormazione}]
-let docText = '';
-let docFile = null;
+// ═══════════════════════════════════════
+let listino   = {};   // {cat:[{nome,um,prezzoOS,prezzoST,scontoOS,scontoST,qty,sel,incluso,custom,per}]}
+let mansioni  = [];   // [{nome,n,per,accertamenti:[],aiSuggested}]
+let sedi      = [];   // [{citta,rows:[{mansione,n}]}]
+let docText   = '';
+let docFile   = null;
 
-// ═══════════════════════════════════════════════════════════
-// DEFAULT LISTINO (based on real DC documents)
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
+// DEFAULT LISTINO
+// ═══════════════════════════════════════
 const DEFAULT_LISTINO = {
-  "INCARICO MEDICO COMPETENTE": [
-    {nome:"Incarico Medico Competente Coordinatore", um:"€/cad.", prezzoOS:800, prezzoST:800},
-    {nome:"Incarico Medico Competente Coordinato",   um:"€/cad.", prezzoOS:290, prezzoST:290},
+  "Incarico Medico Competente":[
+    {nome:"Incarico Medico Competente Coordinatore", um:"€/cad.", prezzoOS:800,  prezzoST:800},
+    {nome:"Incarico Medico Competente Coordinato",   um:"€/cad.", prezzoOS:290,  prezzoST:290},
   ],
-  "SERVIZI GENERALI": [
-    {nome:"Sopralluogo Medico Competente",                               um:"€/cad.", prezzoOS:180, prezzoST:180},
-    {nome:"Partecipazione MC a riunioni periodiche",                    um:"€/ora",  prezzoOS:100, prezzoST:100},
-    {nome:"Partecipazione MC a riunioni enti di controllo",             um:"€/ora",  prezzoOS:100, prezzoST:100},
-    {nome:"Invio Allegato 3B annuale",                                  um:"€/anno", prezzoOS:0,   prezzoST:0, incluso:true},
-    {nome:"Cartella Sanitaria Digitalizzata",                           um:"€/lav.", prezzoOS:1.50,prezzoST:1.50},
+  "Servizi Generali":[
+    {nome:"Sopralluogo Medico Competente",                        um:"€/cad.", prezzoOS:180,  prezzoST:180},
+    {nome:"Partecipazione MC a riunioni periodiche",              um:"€/ora",  prezzoOS:100,  prezzoST:100},
+    {nome:"Partecipazione MC a riunioni enti di controllo",       um:"€/ora",  prezzoOS:100,  prezzoST:100},
+    {nome:"Invio Allegato 3B annuale",                            um:"€/anno", prezzoOS:0,    prezzoST:0,   incluso:true},
+    {nome:"Cartella Sanitaria Digitalizzata",                     um:"€/lav.", prezzoOS:1.50, prezzoST:1.50},
   ],
-  "DIRITTI DI USCITA": [
-    {nome:"Diritto uscita medico c/o azienda (min. 15-20 persone)",     um:"€/die",  prezzoOS:90,  prezzoST:90},
-    {nome:"Clinica mobile",                                             um:"€/die",  prezzoOS:0,   prezzoST:0, custom:true},
-    {nome:"Rimborso km trasferta camper",                               um:"km ACI", prezzoOS:0,   prezzoST:0, custom:true},
+  "Diritti di Uscita":[
+    {nome:"Diritto uscita medico c/o azienda (min. 15 persone)", um:"€/die",  prezzoOS:90,   prezzoST:90},
+    {nome:"Clinica mobile",                                       um:"€/die",  prezzoOS:0,    prezzoST:0,   custom:true},
+    {nome:"Rimborso km trasferta camper",                         um:"km ACI", prezzoOS:0,    prezzoST:0,   custom:true},
   ],
-  "VISITE MEDICHE": [
-    {nome:"Visita medica periodica ON SITE (gruppi ≥ 15-20 lav.)",     um:"€/cad.", prezzoOS:42,  prezzoST:null},
-    {nome:"Visita medica periodica c/o Studio Medico (<15-20 lav.)",   um:"€/cad.", prezzoOS:null, prezzoST:48},
-    {nome:"Visita medica preventiva (entro 5 gg)",                     um:"€/cad.", prezzoOS:48,  prezzoST:48},
-    {nome:"Visita medica di rientro (entro 5 gg)",                     um:"€/cad.", prezzoOS:48,  prezzoST:48},
-    {nome:"Visita medica straordinaria (richiesta lavoratore)",         um:"€/cad.", prezzoOS:48,  prezzoST:48},
-    {nome:"Certificati medici su richiesta",                           um:"€/cad.", prezzoOS:45,  prezzoST:48},
+  "Visite Mediche":[
+    {nome:"Visita medica periodica ON SITE (gruppi ≥ 15 lav.)",  um:"€/cad.", prezzoOS:42,   prezzoST:null},
+    {nome:"Visita medica periodica c/o Studio Medico",            um:"€/cad.", prezzoOS:null, prezzoST:48},
+    {nome:"Visita medica preventiva (entro 5 gg)",                um:"€/cad.", prezzoOS:48,   prezzoST:48},
+    {nome:"Visita medica di rientro (entro 5 gg)",                um:"€/cad.", prezzoOS:48,   prezzoST:48},
+    {nome:"Visita medica straordinaria",                          um:"€/cad.", prezzoOS:48,   prezzoST:48},
+    {nome:"Certificati medici su richiesta",                      um:"€/cad.", prezzoOS:45,   prezzoST:48},
   ],
-  "ACCERTAMENTI": [
-    {nome:"Visio Test",                             um:"€/cad.", prezzoOS:30,  prezzoST:35},
-    {nome:"ECG (elettrocardiogramma)",              um:"€/cad.", prezzoOS:25,  prezzoST:32},
-    {nome:"Spirometria",                            um:"€/cad.", prezzoOS:20,  prezzoST:27},
-    {nome:"Audiometria",                            um:"€/cad.", prezzoOS:25,  prezzoST:32},
-    {nome:"Alcool Test",                            um:"€/cad.", prezzoOS:20,  prezzoST:27},
-    {nome:"Drug Test",                              um:"€/cad.", prezzoOS:35,  prezzoST:50},
-    {nome:"Protocolli Arti Superiori",              um:"€/cad.", prezzoOS:15,  prezzoST:18},
-    {nome:"Valutazione Rachide",                    um:"€/cad.", prezzoOS:8,   prezzoST:10},
-    {nome:"Esami di laboratorio (pacchetto base)",  um:"€/cad.", prezzoOS:45,  prezzoST:45},
-    {nome:"Questionario osteo-articolare",          um:"€/cad.", prezzoOS:5,   prezzoST:7},
-    {nome:"Test sierologico (Tetano/HBs/HAV)",     um:"€/cad.", prezzoOS:20,  prezzoST:23},
-    {nome:"AUDIT (alcool)",                         um:"€/cad.", prezzoOS:10,  prezzoST:12},
+  "Accertamenti Singoli":[
+    {nome:"Visio Test",                          um:"€/cad.", prezzoOS:30,  prezzoST:35},
+    {nome:"ECG (elettrocardiogramma)",           um:"€/cad.", prezzoOS:25,  prezzoST:32},
+    {nome:"Spirometria",                         um:"€/cad.", prezzoOS:20,  prezzoST:27},
+    {nome:"Audiometria",                         um:"€/cad.", prezzoOS:25,  prezzoST:32},
+    {nome:"Alcool Test",                         um:"€/cad.", prezzoOS:20,  prezzoST:27},
+    {nome:"Drug Test",                           um:"€/cad.", prezzoOS:35,  prezzoST:50},
+    {nome:"Protocolli Arti Superiori",           um:"€/cad.", prezzoOS:15,  prezzoST:18},
+    {nome:"Valutazione Rachide",                 um:"€/cad.", prezzoOS:8,   prezzoST:10},
+    {nome:"Esami di laboratorio (pacchetto)",    um:"€/cad.", prezzoOS:45,  prezzoST:45},
+    {nome:"Questionario osteo-articolare",       um:"€/cad.", prezzoOS:5,   prezzoST:7},
+    {nome:"Sierologia (Tetano/HBs/HAV)",         um:"€/cad.", prezzoOS:20,  prezzoST:23},
+    {nome:"AUDIT (alcool)",                      um:"€/cad.", prezzoOS:10,  prezzoST:12},
   ],
-  "PACCHETTI PER MANSIONE": [
-    {nome:"Addetto alle pulizie (ECG+Spiro+Arti Sup.+Questionario)", um:"€/cad.", prezzoOS:85, prezzoST:102, per:"12 mesi"},
-    {nome:"Facchino (ECG biennale+Spiro+AUDIT+Arti Sup.+Questionario)",um:"€/cad.",prezzoOS:85, prezzoST:102, per:"12 mesi"},
-    {nome:"Receptionist/VDT (VisioTest+Arti Sup.+Rachide)",          um:"€/cad.", prezzoOS:70, prezzoST:85,  per:"24 mesi"},
-    {nome:"Autista/Autospurghista (Visita+Esami+Spiro+Drug Test)",    um:"€/cad.", prezzoOS:135,prezzoST:155, per:"Annuale"},
-    {nome:"Magazziniere (Visita+Esami+Spiro+Drug Test)",             um:"€/cad.", prezzoOS:135,prezzoST:155, per:"Annuale"},
-    {nome:"Impiegato VDT (Visita+Rachide+VisioTest)",                um:"€/cad.", prezzoOS:75, prezzoST:85,  per:"Biennale"},
-    {nome:"Audiomet. magazziniere (biennale)",                       um:"€/cad.", prezzoOS:25, prezzoST:32,  per:"24 mesi"},
-  ],
-};
-
-const DEFAULT_FORMAZIONE = {
-  "FORMAZIONE – IMPIEGATO": [
-    {nome:"Formazione Videoterminalista",             modalita:"e-learning",     ore:4,  prezzo:70,  minAllievi:null},
-    {nome:"Form. Lavoratore Gen. + Specifica R.Basso",modalita:"e-learning",     ore:8,  prezzo:120, minAllievi:null},
-    {nome:"Addetti Antincendio Liv. 2",               modalita:"Aula",           ore:8,  prezzo:120, minAllievi:8},
-    {nome:"Addetti Primo Soccorso Cat. B-C",          modalita:"Teoria+Pratica", ore:12, prezzo:160, minAllievi:9},
-  ],
-  "FORMAZIONE – AUTISTI / AUTOSPURGHISTI": [
-    {nome:"Form. Lavoratore Gen. + Specifica R.Alto",  modalita:"Videoconf./Aula",ore:16, prezzo:180, minAllievi:8},
-    {nome:"Addetti Antincendio Liv. 2",                modalita:"Presenza",      ore:8,  prezzo:120, minAllievi:8},
-    {nome:"Addetti Primo Soccorso Cat. B-C",           modalita:"Teoria+Pratica",ore:12, prezzo:160, minAllievi:9},
-    {nome:"Rischio agenti biologici",                  modalita:"Videoconf.",     ore:8,  prezzo:120, minAllievi:8},
-    {nome:"Rischio agenti chimici",                    modalita:"Videoconf.",     ore:4,  prezzo:70,  minAllievi:8},
-    {nome:"Rischio Rumore e Vibrazioni",               modalita:"Videoconf.",     ore:8,  prezzo:120, minAllievi:8},
-    {nome:"Carrellisti e mulettisti",                  modalita:"Teoria+Pratica", ore:12, prezzo:180, minAllievi:9},
-    {nome:"Rischio MMC",                               modalita:"Videoconf.",     ore:4,  prezzo:70,  minAllievi:8},
-  ],
-  "FORMAZIONE – MAGAZZINIERI": [
-    {nome:"Form. Lavoratore Gen. + Specifica R.Alto",  modalita:"Videoconf./Aula",ore:16, prezzo:180, minAllievi:8},
-    {nome:"Addetti Antincendio Liv. 2",                modalita:"Presenza",      ore:8,  prezzo:120, minAllievi:8},
-    {nome:"Addetti Primo Soccorso Cat. B-C",           modalita:"Teoria+Pratica",ore:12, prezzo:160, minAllievi:9},
-    {nome:"Rischio agenti biologici",                  modalita:"Videoconf.",     ore:8,  prezzo:120, minAllievi:8},
-    {nome:"Rischio Rumore e Vibrazioni",               modalita:"Videoconf.",     ore:8,  prezzo:120, minAllievi:8},
-    {nome:"Rischio MMC",                               modalita:"Videoconf.",     ore:4,  prezzo:70,  minAllievi:8},
-    {nome:"Carrellisti e mulettisti",                  modalita:"Teoria+Pratica", ore:12, prezzo:180, minAllievi:9},
-  ],
-  "FORMAZIONE – FIGURE AZIENDALI": [
-    {nome:"Dirigenti alla sicurezza", modalita:"e-learning",  ore:8,  prezzo:270, minAllievi:null},
-    {nome:"Preposti alla sicurezza",  modalita:"Videoconf.",   ore:12, prezzo:160, minAllievi:7},
+  "Pacchetti per Mansione":[
+    {nome:"Addetto pulizie (ECG+Spiro+Arti Sup.+Quest.)",           um:"€/cad.", prezzoOS:85,  prezzoST:102, per:"12 mesi"},
+    {nome:"Facchino (ECG+Spiro+AUDIT+Arti Sup.+Quest.)",            um:"€/cad.", prezzoOS:85,  prezzoST:102, per:"12 mesi"},
+    {nome:"Receptionist/VDT (VisioTest+Arti Sup.+Rachide)",         um:"€/cad.", prezzoOS:70,  prezzoST:85,  per:"24 mesi"},
+    {nome:"Autista/Autospurghista (Visita+Esami+Spiro+Drug Test)",   um:"€/cad.", prezzoOS:135, prezzoST:155, per:"Annuale"},
+    {nome:"Magazziniere (Visita+Esami+Spiro+Drug Test)",             um:"€/cad.", prezzoOS:135, prezzoST:155, per:"Annuale"},
+    {nome:"Impiegato VDT (Visita+Rachide+VisioTest)",                um:"€/cad.", prezzoOS:75,  prezzoST:85,  per:"Biennale"},
+    {nome:"Audiometria magazziniere (biennale)",                     um:"€/cad.", prezzoOS:25,  prezzoST:32,  per:"24 mesi"},
   ],
 };
 
-// ═══════════════════════════════════════════════════════════
-// STEPS
-// ═══════════════════════════════════════════════════════════
-let currentStep=0;
-function goStep(n){
-  document.querySelectorAll('.page').forEach((el,i)=>el.classList.toggle('active',i===n));
-  document.querySelectorAll('.step').forEach((el,i)=>{
-    el.classList.remove('active','done');
-    if(i===n) el.classList.add('active');
-    else if(i<n) el.classList.add('done');
-  });
-  currentStep=n;
-}
-
-// ═══════════════════════════════════════════════════════════
-// DRAG & DROP
-// ═══════════════════════════════════════════════════════════
-function dg(e,id){e.preventDefault();document.getElementById(id).classList.add('dg')}
-function dl(e,id){document.getElementById(id).classList.remove('dg')}
-function dropListino(e){e.preventDefault();dl(e,'listinoZone');if(e.dataTransfer.files[0])loadListino(e.dataTransfer.files[0])}
-function dropDoc(e){e.preventDefault();dl(e,'docZone');if(e.dataTransfer.files[0])loadDoc(e.dataTransfer.files[0])}
-
-// ═══════════════════════════════════════════════════════════
-// LISTINO LOADING
-// ═══════════════════════════════════════════════════════════
-function loadDefaultListino(){
+function initListino(){
   listino={};
-  for(const [cat,voci] of Object.entries(DEFAULT_LISTINO)){
-    listino[cat]=voci.map(v=>({...v,sconto:0,qty:1,sel:false}));
+  for(const[cat,voci] of Object.entries(DEFAULT_LISTINO)){
+    listino[cat]=voci.map(v=>({...v,scontoOS:0,scontoST:0,qty:1,sel:false}));
   }
-  renderListino();
-  document.getElementById('listinoFname').innerHTML='<div class="fpill">✅ Listino standard Delivery Care</div>';
 }
 
+// ═══════════════════════════════════════
+// API KEY (localStorage)
+// ═══════════════════════════════════════
+function getKey(){return localStorage.getItem('dc_gemini_key')||''}
+
+// ═══════════════════════════════════════
+// PAGER
+// ═══════════════════════════════════════
+function goPage(n){
+  document.querySelectorAll('.page').forEach((el,i)=>el.classList.toggle('active',i===n));
+  document.querySelectorAll('.pager-tab').forEach((el,i)=>{
+    el.classList.remove('active','done');
+    if(i===n)el.classList.add('active');
+    else if(i<n)el.classList.add('done');
+  });
+}
+
+// ═══════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════
+function dzOver(e,id){e.preventDefault();document.getElementById(id).classList.add('over')}
+function dzOut(e,id){document.getElementById(id).classList.remove('over')}
+function dzDrop(e){
+  e.preventDefault();
+  document.getElementById('docZone').classList.remove('over');
+  if(e.dataTransfer.files[0])loadDoc(e.dataTransfer.files[0]);
+}
+
+// ═══════════════════════════════════════
+// LISTINO LOADING
+// ═══════════════════════════════════════
 function loadListino(file){
   if(!file)return;
-  document.getElementById('listinoFname').textContent='📊 '+file.name+' (attivo)';
+  document.getElementById('listinoStatus').textContent='⏳ Caricamento...';
   const ext=file.name.split('.').pop().toLowerCase();
-  const reader=new FileReader();
-  if(ext==='csv'){
-    reader.onload=e=>parseCSV(e.target.result);
-    reader.readAsText(file);
-  }else{
-    reader.onload=e=>{
-      const wb=XLSX.read(e.target.result,{type:'binary'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-      parseExcelRows(rows);
-    };
-    reader.readAsBinaryString(file);
-  }
-}
-function parseCSV(text){
-  const lines=text.split('\n').filter(l=>l.trim());
-  const sep=lines[0].includes(';')?';':',';
-  const headers=lines[0].split(sep).map(h=>h.trim().toLowerCase());
-  const rows=lines.slice(1).map(l=>l.split(sep));
-  buildListinoFromRows(headers,rows);
-}
-function parseExcelRows(rows){
-  if(rows.length<2)return;
-  const headers=rows[0].map(h=>String(h).trim().toLowerCase());
-  buildListinoFromRows(headers,rows.slice(1));
-}
-function buildListinoFromRows(headers,rows){
-  const iCat=findCol(headers,['categoria','cat','gruppo']);
-  const iNome=findCol(headers,['servizio','nome','descrizione','accertamento']);
-  const iOs=findCol(headers,['on site','onsite','prezzo os','prezzo on','os']);
-  const iSt=findCol(headers,['studio','st','prezzo st','prezzo studio']);
-  const iUm=findCol(headers,['um','unita','unità','misura']);
-  listino={};
-  rows.filter(r=>r[iNome]&&String(r[iNome]).trim()).forEach(r=>{
-    const cat=iCat>=0?String(r[iCat]||'').trim():'SERVIZI';
-    if(!listino[cat])listino[cat]=[];
-    listino[cat].push({
-      nome:String(r[iNome]).trim(),
-      um:iUm>=0?String(r[iUm]||'€/cad.').trim():'€/cad.',
-      prezzoOS:parseFloat(String(r[iOs]||0).replace(',','.'))||0,
-      prezzoST:parseFloat(String(r[iSt]||0).replace(',','.'))||0,
-      sconto:0,qty:1,sel:false
+  const r=new FileReader();
+  const parse=(rows)=>{
+    const headers=rows[0].map(h=>String(h).trim().toLowerCase());
+    const fc=c=>headers.findIndex(h=>c.some(x=>h.includes(x)));
+    const iN=fc(['servizio','nome','descrizione']);
+    const iC=fc(['categoria','cat','gruppo']);
+    const iO=fc(['on site','onsite','os','prezzo os']);
+    const iS=fc(['studio','st','prezzo st']);
+    const iU=fc(['um','unità','misura']);
+    listino={};
+    rows.slice(1).filter(r=>r[iN]&&String(r[iN]).trim()).forEach(r=>{
+      const cat=iC>=0?String(r[iC]||'').trim():'Servizi';
+      if(!listino[cat])listino[cat]=[];
+      listino[cat].push({
+        nome:String(r[iN]).trim(),
+        um:iU>=0?String(r[iU]||'€/cad.').trim():'€/cad.',
+        prezzoOS:parseFloat(String(r[iO]||0).replace(',','.'))||0,
+        prezzoST:parseFloat(String(r[iS]||0).replace(',','.'))||0,
+        scontoOS:0,scontoST:0,qty:1,sel:false
+      });
     });
-  });
-  renderListino();
-}
-function findCol(headers,candidates){
-  for(const c of candidates){const i=headers.findIndex(h=>h.includes(c));if(i>=0)return i;}
-  return 0;
-}
-
-function resetListino(){
-  loadDefaultListino();
-  document.getElementById('listinoFname').textContent='';
-  document.getElementById('listinoFile').value='';
-}
-function fmtP(n){return(n%1===0?n.toFixed(0):n.toFixed(2))}
-
-// Assicura che ogni voce abbia scontoOS e scontoST separati
-function migrateVoce(v){
-  if(v.scontoOS===undefined) v.scontoOS = v.sconto||0;
-  if(v.scontoST===undefined) v.scontoST = v.sconto||0;
+    document.getElementById('listinoStatus').textContent=`✅ ${file.name}`;
+    flash(`📊 Listino caricato: ${file.name}`,'ok','pg0');
+  };
+  if(ext==='csv'){r.onload=e=>{const l=e.target.result.split('\n').filter(x=>x.trim());const sep=l[0].includes(';')?';':',';parse(l.map(x=>x.split(sep)));};r.readAsText(file);}
+  else{r.onload=e=>{const wb=XLSX.read(e.target.result,{type:'binary'});const ws=wb.Sheets[wb.SheetNames[0]];parse(XLSX.utils.sheet_to_json(ws,{header:1,defval:''}));};r.readAsBinaryString(file);}
 }
 
-function renderListino(){
-  const content=document.getElementById('listinoContent');
-  const INP='padding:4px 6px;font-size:12px;border-radius:4px;width:68px;';
-  const INP_N='padding:4px 6px;font-size:12px;font-weight:600;color:#1b6e36;border-radius:4px;width:72px;background:#f0faf3;';
-  content.innerHTML=Object.entries(listino).map(([cat,voci],ci)=>`
-    <div class="offer-section">
-      <div class="offer-cat-header">
-        <input type="checkbox" onchange="selectCat(${ci},this.checked)" style="width:15px;height:15px">
-        ${cat}
-        <span style="margin-left:auto;font-weight:400;font-size:11px;color:var(--gray);">${voci.length} voci</span>
-      </div>
-      <div class="scroll-x">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th rowspan="2" style="width:30px"></th>
-              <th rowspan="2">Servizio / Accertamento</th>
-              <th rowspan="2" style="width:38px">U.M.</th>
-              <th colspan="3" style="text-align:center;background:#003f7a;border-right:2px solid #fff">ON SITE</th>
-              <th colspan="3" style="text-align:center;background:#145229;border-right:2px solid #fff">STUDIO</th>
-              <th rowspan="2" style="width:52px">Qtà</th>
-            </tr>
-            <tr>
-              <th style="width:80px;background:#004a90">€ Listino</th>
-              <th style="width:68px;background:#004a90">Sc. %</th>
-              <th style="width:76px;background:#1a6b35">✏️ Netto</th>
-              <th style="width:80px;background:#1b6030">€ Listino</th>
-              <th style="width:68px;background:#1b6030">Sc. %</th>
-              <th style="width:76px;background:#1a6b35">✏️ Netto</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${voci.map((v,vi)=>{
-              migrateVoce(v);
-              const nOS = v.prezzoOS ? +(v.prezzoOS*(1-v.scontoOS/100)).toFixed(2) : null;
-              const nST = v.prezzoST ? +(v.prezzoST*(1-v.scontoST/100)).toFixed(2) : null;
-              const dis = v.incluso||v.custom;
-              const badge = dis ? `<span class="tag ${v.incluso?'tag-green':''}" style="grid-column:span 6">${v.incluso?'Incluso':'Su richiesta'}</span>` : '';
-              return `
-              <tr class="${v.sel?'sel':''}" id="lr_${ci}_${vi}">
-                <td><input type="checkbox" ${v.sel?'checked':''} onchange="toggleVoce(${ci},${vi},this.checked)"></td>
-                <td>${v.nome}${v.per?` <span class="tag tag-green">${v.per}</span>`:''}</td>
-                <td style="color:var(--gray);font-size:10px">${v.um}</td>
-                ${dis ? `<td colspan="6" style="text-align:center"><span class="tag ${v.incluso?'tag-green':''}">${v.incluso?'Incluso':'Su richiesta'}</span></td>` : `
-                <td class="num-r" style="background:#f5f9ff">${v.prezzoOS?'€ '+fmtP(v.prezzoOS):'—'}</td>
-                <td style="background:#f5f9ff">${v.prezzoOS?`<input type="number" id="scOS_${ci}_${vi}" value="${v.scontoOS}" min="0" max="100" step="0.1" style="${INP}border:1px solid var(--border)" onchange="fromScontoOS(${ci},${vi},this.value)">` :'—'}</td>
-                <td style="background:#f0faf3">${v.prezzoOS?`<input type="number" id="nOS_${ci}_${vi}" value="${nOS}" min="0" step="0.01" style="${INP_N}border:1.5px solid #a7d7b0" onchange="fromNettoOS(${ci},${vi},this.value)">` :'—'}</td>
-                <td class="num-r" style="background:#f5fff8">${v.prezzoST?'€ '+fmtP(v.prezzoST):'—'}</td>
-                <td style="background:#f5fff8">${v.prezzoST?`<input type="number" id="scST_${ci}_${vi}" value="${v.scontoST}" min="0" max="100" step="0.1" style="${INP}border:1px solid #b7dfc5" onchange="fromScontoST(${ci},${vi},this.value)">` :'—'}</td>
-                <td style="background:#f0faf3">${v.prezzoST?`<input type="number" id="nST_${ci}_${vi}" value="${nST}" min="0" step="0.01" style="${INP_N}border:1.5px solid #a7d7b0" onchange="fromNettoST(${ci},${vi},this.value)">` :'—'}</td>`}
-                <td><input type="number" id="qty_${ci}_${vi}" value="${v.qty}" min="1"
-                  style="width:46px;padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"
-                  onchange="setQty(${ci},${vi},this.value)"></td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ── Sconto OS % → netto OS (solo OS)
-function fromScontoOS(ci,vi,val){
-  const v=Object.values(listino)[ci][vi];
-  v.scontoOS=Math.min(100,Math.max(0,parseFloat(val)||0));
-  if(v.prezzoOS){const el=document.getElementById(`nOS_${ci}_${vi}`);if(el)el.value=+(v.prezzoOS*(1-v.scontoOS/100)).toFixed(2);}
-}
-// ── Netto OS → sconto OS % (solo OS)
-function fromNettoOS(ci,vi,val){
-  const v=Object.values(listino)[ci][vi];
-  if(!v.prezzoOS)return;
-  const netto=parseFloat(val)||0;
-  v.scontoOS=Math.min(100,Math.max(0,+((1-netto/v.prezzoOS)*100).toFixed(2)));
-  const el=document.getElementById(`scOS_${ci}_${vi}`);if(el)el.value=v.scontoOS;
-}
-// ── Sconto ST % → netto ST (solo ST)
-function fromScontoST(ci,vi,val){
-  const v=Object.values(listino)[ci][vi];
-  v.scontoST=Math.min(100,Math.max(0,parseFloat(val)||0));
-  if(v.prezzoST){const el=document.getElementById(`nST_${ci}_${vi}`);if(el)el.value=+(v.prezzoST*(1-v.scontoST/100)).toFixed(2);}
-}
-// ── Netto ST → sconto ST % (solo ST)
-function fromNettoST(ci,vi,val){
-  const v=Object.values(listino)[ci][vi];
-  if(!v.prezzoST)return;
-  const netto=parseFloat(val)||0;
-  v.scontoST=Math.min(100,Math.max(0,+((1-netto/v.prezzoST)*100).toFixed(2)));
-  const el=document.getElementById(`scST_${ci}_${vi}`);if(el)el.value=v.scontoST;
-}
-
-function toggleVoce(ci,vi,checked){
-  const cat=Object.keys(listino)[ci];
-  listino[cat][vi].sel=checked;
-  document.getElementById(`lr_${ci}_${vi}`).className=checked?'sel':'';
-}
-function setQty(ci,vi,val){Object.values(listino)[ci][vi].qty=Math.max(1,parseInt(val)||1)}
-function selectCat(ci,checked){
-  const cat=Object.keys(listino)[ci];
-  listino[cat].forEach((v,vi)=>{v.sel=checked;const el=document.getElementById(`lr_${ci}_${vi}`);if(el)el.className=checked?'sel':''});
-}
-
-// ═══════════════════════════════════════════════════════════
-// DOCUMENT LOADING
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
+// DOCUMENT LOAD
+// ═══════════════════════════════════════
 function loadDoc(file){
   if(!file)return;
   docFile=file;
-  document.getElementById('docFname').innerHTML=`<div class="fpill">📄 ${file.name}</div>`;
+  document.getElementById('docFname').innerHTML=`<div class="file-pill">📎 ${file.name}</div>`;
   document.getElementById('extractBtn').disabled=false;
-  const ext=file.name.split('.').pop().toLowerCase();
   const r=new FileReader();
-  if(ext==='pdf'){r.onload=e=>{docText=e.target.result};r.readAsDataURL(file);}
-  else{r.onload=e=>{docText=e.target.result};r.readAsText(file);}
+  if(file.name.endsWith('.pdf')){r.onload=e=>docText=e.target.result;r.readAsDataURL(file);}
+  else{r.onload=e=>docText=e.target.result;r.readAsText(file);}
 }
 function clearDoc(){
   docFile=null;docText='';
@@ -862,718 +732,619 @@ function clearDoc(){
   document.getElementById('extractBtn').disabled=true;
 }
 
-async function extractFromDoc(){
+// ═══════════════════════════════════════
+// AI EXTRACT
+// ═══════════════════════════════════════
+async function extractDoc(){
   if(!docText)return alert('Carica prima un documento.');
-  showLoading('Estrazione dati azienda con Gemini AI...');
-  const prompt=`Sei un esperto di medicina del lavoro italiana. Analizza il documento allegato ed estrai in formato JSON VALIDO (nessun testo o backtick aggiuntivo):
-{"ragione_sociale":"","piva":"","sede":"","referente":"","email":"","tel":"","ateco":"","n_lavoratori":0,"note":"",
-"mansioni":[{"nome":"","n":1,"periodicita":"12 mesi"}],
-"sedi":[{"citta":"","mansioni":[{"nome":"","n":1}]}]}`;
+  showLoader('Estrazione dati con Gemini AI...');
+  const prompt=`Sei un esperto di medicina del lavoro italiana. Analizza il documento e restituisci SOLO questo JSON valido (nessun testo aggiuntivo, nessun backtick):
+{"ragione_sociale":"","piva":"","sede":"","referente":"","email":"","tel":"","ateco":"","n_lavoratori":0,
+"multisede":false,
+"sedi":[{"citta":"","mansioni":[{"nome":"","n":1}]}],
+"mansioni":[{"nome":"","n":1,"periodicita":"12 mesi"}]}`;
   try{
-    const isPDF=docText.startsWith('data:application/pdf');
-    let txt;
-    if(isPDF){
-      txt = await callAI(prompt, docText.split(',')[1]);
-    } else {
-      txt = await callAI(prompt+'\n\nTESTO:\n'+docText.substring(0,8000));
-    }
-    const d=JSON.parse(txt.trim().replace(/```json|```/g,'').trim());
-    if(d.ragione_sociale)document.getElementById('c_rag').value=d.ragione_sociale;
-    if(d.piva)document.getElementById('c_piva').value=d.piva;
-    if(d.sede)document.getElementById('c_sede').value=d.sede;
-    if(d.referente)document.getElementById('c_ref').value=d.referente;
-    if(d.email)document.getElementById('c_email').value=d.email;
-    if(d.tel)document.getElementById('c_tel').value=d.tel;
-    if(d.ateco)document.getElementById('c_ateco').value=d.ateco;
-    if(d.n_lavoratori)document.getElementById('c_nlav').value=d.n_lavoratori;
-    if(d.note)document.getElementById('c_note').value=d.note;
-    if(d.mansioni&&d.mansioni.length){
+    const txt=await callAI(prompt, docText.startsWith('data:application/pdf')?docText.split(',')[1]:null,
+      docText.startsWith('data:')?null:docText.substring(0,9000));
+    const d=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    if(d.ragione_sociale)V('c_rag').value=d.ragione_sociale;
+    if(d.piva)V('c_piva').value=d.piva;
+    if(d.sede)V('c_sede').value=d.sede;
+    if(d.referente)V('c_ref').value=d.referente;
+    if(d.email)V('c_email').value=d.email;
+    if(d.tel)V('c_tel').value=d.tel;
+    if(d.ateco)V('c_ateco').value=d.ateco;
+    if(d.n_lavoratori)V('c_nlav').value=d.n_lavoratori;
+    if(d.mansioni?.length){
       d.mansioni.forEach(m=>{
         if(m.nome&&!mansioni.find(x=>x.nome.toLowerCase()===m.nome.toLowerCase()))
-          mansioni.push({nome:m.nome,n:m.n||1,periodicita:m.periodicita||'12 mesi',accertamenti:[],aiSuggested:false});
+          mansioni.push({nome:m.nome,n:m.n||1,per:m.periodicita||'12 mesi',accertamenti:[],aiSuggested:false});
       });
-      renderMansioni();
+      renderMans();
     }
-    if(d.sedi&&d.sedi.length){
-      d.sedi.forEach(s=>{
-        if(s.citta&&!sedi.find(x=>x.citta.toLowerCase()===s.citta.toLowerCase()))
-          sedi.push({citta:s.citta,mansioni:s.mansioni||[]});
-      });
-      renderSedi();
+    if(d.multisede||d.sedi?.length>1){
+      V('isMultisede').checked=true;toggleMultisede();
+      if(d.sedi?.length){
+        sedi=d.sedi.map(s=>({citta:s.citta||'',rows:s.mansioni?.map(m=>({mansione:m.nome,n:m.n||1}))||[]}));
+        renderSedi();
+      }
     }
-    hideLoading();
-    flash('✅ Dati estratti con successo! Controlla e integra dove necessario.','ok','page1');
-  }catch(e){
-    hideLoading();
-    flash('❌ Errore estrazione: '+e.message,'err','page1');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// MANSIONI
-// ═══════════════════════════════════════════════════════════
-function addMans(){
-  const nome=document.getElementById('newMans').value.trim();
-  const n=parseInt(document.getElementById('newMansN').value)||1;
-  const per=document.getElementById('newMansPer').value;
-  if(!nome)return;
-  if(!mansioni.find(m=>m.nome.toLowerCase()===nome.toLowerCase()))
-    mansioni.push({nome,n,periodicita:per,accertamenti:[],aiSuggested:false});
-  document.getElementById('newMans').value='';
-  renderMansioni();
-}
-function renderMansioni(){
-  const el=document.getElementById('mansioniList');
-  if(!mansioni.length){
-    el.innerHTML='<div class="alert alert-info">Nessuna mansione. Carica un documento e usa "Estrai con AI", oppure inserisci manualmente.</div>';return;
-  }
-  el.innerHTML=mansioni.map((m,i)=>`
-    <div class="mans-row">
-      <div class="mans-info">
-        <div class="mans-name">👤 ${m.nome}
-          <span style="font-weight:400;font-size:12px;color:var(--gray)"> · ${m.n} lavorator${m.n===1?'e':'i'} · ${m.periodicita}</span>
-        </div>
-        <div class="mans-acc" style="margin-top:5px">
-          ${m.accertamenti.map(a=>`<span class="tag${m.aiSuggested?' tag-gold':''}">${a}</span>`).join('')}
-          ${!m.accertamenti.length?'<span style="color:#aaa;font-size:11px">Nessun accertamento — usa AI per suggerirli</span>':''}
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <input type="number" value="${m.n}" min="1" style="width:58px;padding:4px 7px;font-size:12px;border:1px solid var(--border);border-radius:4px"
-          onchange="mansioni[${i}].n=parseInt(this.value)||1;renderMansioni()">
-        <button class="btn-danger" onclick="mansioni.splice(${i},1);renderMansioni()">✕</button>
-      </div>
-    </div>
-  `).join('');
+    hideLoader();
+    flash('✅ Dati estratti. Controlla e integra dove necessario.','ok','pg0');
+  }catch(e){hideLoader();flash('❌ Errore: '+e.message,'err','pg0');}
 }
 
 async function analyzeAI(){
   if(!mansioni.length)return alert('Inserisci prima almeno una mansione.');
-  showLoading('Analisi normativa D.Lgs 81/2008...');
+  showLoader('Analisi D.Lgs 81/2008 con Gemini AI...');
+  const settore=V('c_ateco').value||'non specificato';
   const ms=mansioni.map(m=>m.nome).join(', ');
-  const settore=document.getElementById('c_ateco').value||'non specificato';
   try{
-    const txt=await callAI(`Sei un esperto di medicina del lavoro italiana (D.Lgs 81/2008 e s.m.i., protocolli INAIL).
-Per queste mansioni nel settore "${settore}", indica gli accertamenti sanitari obbligatori e consigliati e la periodicità raccomandata.
-Mansioni: ${ms}
-Rispondi SOLO con JSON valido, nessun testo o backtick:
+    const txt=await callAI(`Sei un esperto di medicina del lavoro italiana (D.Lgs 81/2008, protocolli INAIL).
+Per le mansioni "${ms}" nel settore "${settore}", indica accertamenti sanitari obbligatori/consigliati e periodicità.
+Rispondi SOLO con JSON valido (nessun testo o backtick):
 {"mansioni":[{"nome":"","accertamenti":[""],"periodicita":"12 mesi"}]}`);
-    const d=JSON.parse(txt.trim().replace(/```json|```/g,'').trim());
+    const d=JSON.parse(txt.replace(/```json|```/g,'').trim());
     d.mansioni.forEach(m=>{
-      const found=mansioni.find(x=>x.nome.toLowerCase().includes(m.nome.toLowerCase())||m.nome.toLowerCase().includes(x.nome.toLowerCase()));
-      if(found){found.accertamenti=m.accertamenti;found.aiSuggested=true;if(m.periodicita)found.periodicita=m.periodicita;}
+      const f=mansioni.find(x=>x.nome.toLowerCase().includes(m.nome.toLowerCase())||m.nome.toLowerCase().includes(x.nome.toLowerCase()));
+      if(f){f.accertamenti=m.accertamenti;f.aiSuggested=true;if(m.periodicita)f.per=m.periodicita;}
     });
-    hideLoading();renderMansioni();
-    flash('✅ Accertamenti suggeriti da Gemini AI (D.Lgs 81/2008)','ok','page2');
-  }catch(e){
-    hideLoading();flash('❌ Errore AI: '+e.message,'err','page2');
-  }
+    hideLoader();renderMans();
+    flash('✅ Accertamenti suggeriti da AI · ⚠️ Verifica sempre con il DVR aziendale','warn','pg0');
+  }catch(e){hideLoader();flash('❌ Errore AI: '+e.message,'err','pg0');}
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
+// MANSIONI
+// ═══════════════════════════════════════
+function addMans(){
+  const nome=V('newMansNome').value.trim();
+  if(!nome)return;
+  if(!mansioni.find(m=>m.nome.toLowerCase()===nome.toLowerCase()))
+    mansioni.push({nome,n:parseInt(V('newMansN').value)||1,per:V('newMansPer').value,accertamenti:[],aiSuggested:false});
+  V('newMansNome').value='';
+  renderMans();
+}
+function renderMans(){
+  const el=document.getElementById('mansList');
+  if(!mansioni.length){
+    el.innerHTML='<div class="alert alert-info">Nessuna mansione. Carica un documento o inserisci manualmente.</div>';return;
+  }
+  el.innerHTML=mansioni.map((m,i)=>`
+    <div class="mans-card">
+      <div class="mans-card-top">
+        <div>
+          <div class="mans-name">👤 ${m.nome}</div>
+          <div class="mans-meta">${m.n} lavorator${m.n===1?'e':'i'} &nbsp;·&nbsp; Periodicità: ${m.per}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="number" value="${m.n}" min="1"
+            style="width:60px;padding:5px 8px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;font-family:'Sora',sans-serif"
+            onchange="mansioni[${i}].n=parseInt(this.value)||1;renderMans()">
+          <button class="btn-icon" onclick="mansioni.splice(${i},1);renderMans()" title="Rimuovi">✕</button>
+        </div>
+      </div>
+      ${m.accertamenti.length?`
+        <div class="mans-acc">
+          ${m.accertamenti.map(a=>`<span class="chip ${m.aiSuggested?'chip-gold':'chip-blue'}">${a}</span>`).join('')}
+        </div>
+        ${m.aiSuggested?'<div class="acc-warn">⚠️ Accertamenti suggeriti da AI · Potrebbero non essere completi senza DVR aziendale</div>':''}
+      `:`<div class="mans-acc"><span class="chip chip-gray">Nessun accertamento · usa 🤖 Analizza con AI</span></div>`}
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
 // SEDI
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
+function toggleMultisede(){
+  const on=document.getElementById('isMultisede').checked;
+  document.getElementById('sediBlock').style.display=on?'block':'none';
+  if(on&&!sedi.length)addSede();
+}
 function addSede(){
-  sedi.push({citta:'',mansioni:mansioni.map(m=>({nome:m.nome,n:m.n}))});
+  sedi.push({citta:'',rows:mansioni.map(m=>({mansione:m.nome,n:m.n}))});
   renderSedi();
 }
 function renderSedi(){
   const el=document.getElementById('sediList');
   if(!sedi.length){el.innerHTML='';return;}
   el.innerHTML=sedi.map((s,si)=>`
-    <div style="background:var(--bg);border-radius:6px;padding:14px;margin-bottom:10px;border:1px solid var(--border)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    <div class="sede-block">
+      <div class="sede-header">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div class="fg"><label>Città / Sede</label>
-            <input type="text" value="${s.citta}" placeholder="es. Milano" style="width:160px"
-              onchange="sedi[${si}].citta=this.value">
+            <input type="text" value="${s.citta}" placeholder="es. Roma"
+              style="width:160px" onchange="sedi[${si}].citta=this.value">
           </div>
-          <div class="fg"><label>Tot. lavoratori sede</label>
-            <input type="number" value="${s.mansioni.reduce((a,m)=>a+m.n,0)}" style="width:80px" readonly>
+          <div style="font-size:12px;color:var(--ink3);margin-top:18px">
+            Tot. lavoratori: <strong>${s.rows.reduce((a,r)=>a+r.n,0)}</strong>
           </div>
         </div>
-        <button class="btn-danger" onclick="sedi.splice(${si},1);renderSedi()">✕ Rimuovi</button>
+        <button class="btn-icon" onclick="sedi.splice(${si},1);renderSedi()">✕</button>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${s.mansioni.map((m,mi)=>`
-          <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);border-radius:5px;padding:5px 10px">
-            <span style="font-size:12px;font-weight:500">${m.nome}</span>
-            <input type="number" value="${m.n}" min="0" style="width:52px;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"
-              onchange="sedi[${si}].mansioni[${mi}].n=parseInt(this.value)||0">
+      <div class="sede-mansioni">
+        ${s.rows.map((r,ri)=>`
+          <div style="display:flex;align-items:center;gap:7px;background:var(--white);border:1px solid var(--border);border-radius:6px;padding:6px 12px">
+            <span style="font-size:12px;font-weight:500">${r.mansione||'—'}</span>
+            <input type="number" value="${r.n}" min="0"
+              style="width:52px;padding:4px 7px;font-size:12px;border:1.5px solid var(--border);border-radius:5px;font-family:'Sora',sans-serif"
+              onchange="sedi[${si}].rows[${ri}].n=parseInt(this.value)||0;renderSedi()">
           </div>
         `).join('')}
-        <button class="btn-ghost btn-sm" onclick="sedi[${si}].mansioni.push({nome:'',n:1});renderSedi()">+ mansione</button>
+        <button class="btn btn-ghost btn-sm" onclick="sedi[${si}].rows.push({mansione:'',n:1});renderSedi()">+ mansione</button>
       </div>
     </div>
   `).join('');
 }
 
-// ═══════════════════════════════════════════════════════════
-// OFFER COMPOSITION (Step 4)
-// ═══════════════════════════════════════════════════════════
-function buildOffer(){
-  const content=document.getElementById('offerContent');
-  // Rebuild offerVoci from selected listino items
-  offerVoci=[];
-  for(const [cat,voci] of Object.entries(listino)){
-    voci.filter(v=>v.sel).forEach(v=>{
-      offerVoci.push({cat,nome:v.nome,um:v.um,prezzoOS:v.prezzoOS,prezzoST:v.prezzoST,
-        sconto:v.sconto,qty:v.qty,sel:true,incluso:v.incluso||false,custom:v.custom||false,per:v.per||''});
-    });
-  }
-  renderOffer();
-  buildFormazione();
-}
+// ═══════════════════════════════════════
+// PRICE PAGE BUILDER
+// ═══════════════════════════════════════
+function buildPricePage(){
+  const el=document.getElementById('priceContent');
+  el.innerHTML='';
 
-function renderOffer(){
-  const content=document.getElementById('offerContent');
-  if(!offerVoci.length){
-    content.innerHTML='<div class="alert alert-warn">⚠️ Nessun servizio selezionato. Torna allo Step 1 per selezionare le voci dal listino.</div>';return;
-  }
-  // Group by cat
-  const groups={};
-  offerVoci.forEach((v,i)=>{
-    if(!groups[v.cat])groups[v.cat]=[];
-    groups[v.cat].push({...v,_i:i});
-  });
+  // ── Sezione ACCERTAMENTI IN EVIDENZA ──
+  const accAll=[];
+  mansioni.forEach(m=>m.accertamenti.forEach(a=>{if(!accAll.find(x=>x===a))accAll.push(a);}));
 
-  let html='';
-  for(const [cat,voci] of Object.entries(groups)){
-    html+=`<div class="offer-section">
-      <div class="offer-cat-header">📁 ${cat}</div>
-      <div class="scroll-x"><table class="tbl">
-        <thead><tr>
-          <th>Servizio</th><th>U.M.</th>
-          <th style="width:100px">€ ON SITE</th><th style="width:100px">€ STUDIO</th>
-          <th style="width:80px">Sconto %</th><th style="width:75px">Qtà</th>
-          <th style="width:110px">Totale</th><th style="width:36px"></th>
-        </tr></thead>
-        <tbody>
-        ${voci.map(v=>{
-          const po=v.prezzoOS?(v.prezzoOS*(1-v.sconto/100)).toFixed(2):null;
-          const ps=v.prezzoST?(v.prezzoST*(1-v.sconto/100)).toFixed(2):null;
-          const tot=v.incluso?null:(po?parseFloat(po)*v.qty:ps?parseFloat(ps)*v.qty:0);
-          return `<tr>
-            <td>${v.nome}${v.per?` <span class="tag tag-green">${v.per}</span>`:''}</td>
-            <td style="color:var(--gray);font-size:11px">${v.um}</td>
-            <td class="num-r">${v.incluso?'<span class="tag tag-green">Incluso</span>':v.custom?'<span style="color:var(--gray)">Su richiesta</span>':po?'€ '+po:'—'}</td>
-            <td class="num-r">${v.incluso?'':v.custom?'':ps?'€ '+ps:'—'}</td>
-            <td><input type="number" value="${v.sconto}" min="0" max="100" style="width:60px;padding:4px 7px;font-size:12px;border:1px solid var(--border);border-radius:4px" onchange="offerVoci[${v._i}].sconto=parseFloat(this.value)||0;renderOffer()" ${v.incluso||v.custom?'disabled':''}></td>
-            <td><input type="number" value="${v.qty}" min="1" style="width:55px;padding:4px 7px;font-size:12px;border:1px solid var(--border);border-radius:4px" onchange="offerVoci[${v._i}].qty=parseInt(this.value)||1;renderOffer()"></td>
-            <td class="price-cell">${v.incluso?'Incluso':v.custom?'—':tot?'€ '+tot.toFixed(2):'—'}</td>
-            <td><button class="btn-danger" onclick="offerVoci.splice(${v._i},1);rebuildIndexes();renderOffer()">✕</button></td>
-          </tr>`;
-        }).join('')}
-        </tbody>
-      </table></div>
-    </div>`;
+  if(mansioni.length){
+    const sec=makeSectionBlock('⚕️','Accertamenti per mansione','Riepilogo degli accertamenti rilevati — abbina i costi dal listino');
+    const table=document.createElement('div');
+    table.innerHTML=`
+      <div class="scroll-x">
+        <table class="ptable">
+          <thead><tr>
+            <th>Mansione</th>
+            <th>Periodicità</th>
+            <th class="nc">Lavoratori</th>
+            <th>Accertamenti</th>
+          </tr></thead>
+          <tbody>
+            ${mansioni.map(m=>`
+              <tr>
+                <td><strong>${m.nome}</strong></td>
+                <td>${m.per}</td>
+                <td class="nc">${m.n}</td>
+                <td>${m.accertamenti.length
+                  ? m.accertamenti.map(a=>`<span class="chip chip-blue" style="margin:2px">${a}</span>`).join('')
+                  : '<span class="chip chip-gray">—</span>'}
+                  ${m.aiSuggested?'<span class="tag-ai" style="margin-left:6px">🤖 AI</span>':''}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    sec.querySelector('.block-body').appendChild(table);
+    el.appendChild(sec);
   }
-  content.innerHTML=html;
-}
-function rebuildIndexes(){offerVoci.forEach((v,i)=>v._i=i)}
 
-function buildFormazione(){
-  const content=document.getElementById('formazioneContent');
-  let html='';
-  for(const [cat,corsi] of Object.entries(DEFAULT_FORMAZIONE)){
-    html+=`<div class="offer-section">
-      <div class="offer-cat-header">
-        <input type="checkbox" onchange="selectFormCat('${cat}',this.checked)" style="width:15px;height:15px">
+  // ── Sezione LISTINO per categoria ──
+  const sec2=makeSectionBlock('💶','Listino prezzi & Sconti','Seleziona le voci da includere · modifica prezzi netti o sconto %');
+  const listinoWrap=document.createElement('div');
+
+  for(const[cat,voci] of Object.entries(listino)){
+    const grp=document.createElement('div');
+    grp.innerHTML=`
+      <div class="section-divider">
+        <input type="checkbox" onchange="selCat('${cat}',this.checked)" style="width:15px;height:15px;cursor:pointer;margin-right:4px">
         ${cat}
       </div>
-      <div class="scroll-x"><table class="tbl">
-        <thead><tr>
-          <th style="width:32px"></th>
-          <th>Corso</th><th>Modalità</th><th>Ore</th>
-          <th style="width:80px">€/pax</th><th style="width:80px">N° min.</th>
-          <th style="width:80px">Sconto %</th><th style="width:75px">Partec.</th><th style="width:100px">Totale</th>
-        </tr></thead>
-        <tbody>
-        ${corsi.map((c,ci)=>{
-          c._cat=cat;c._ci=ci;c.sconto=c.sconto||0;c.partec=c.partec||c.minAllievi||1;c.sel=c.sel||false;
-          return `<tr class="${c.sel?'sel':''}" id="fc_${cat.replace(/[^a-z]/gi,'')}_${ci}">
-            <td><input type="checkbox" ${c.sel?'checked':''} onchange="setFormSel('${cat}',${ci},this.checked)"></td>
-            <td>${c.nome}</td>
-            <td style="font-size:11px;color:var(--gray)">${c.modalita}</td>
-            <td style="text-align:center">${c.ore}h</td>
-            <td class="num-r">€ ${(c.prezzo*(1-c.sconto/100)).toFixed(2)}</td>
-            <td style="text-align:center">${c.minAllievi||'—'}</td>
-            <td><input type="number" value="${c.sconto}" min="0" max="100" style="width:55px;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px" onchange="setFormSconto('${cat}',${ci},this.value)"></td>
-            <td><input type="number" value="${c.partec}" min="1" style="width:55px;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px" onchange="setFormPartec('${cat}',${ci},this.value)"></td>
-            <td class="price-cell">€ ${(c.prezzo*(1-c.sconto/100)*c.partec).toFixed(2)}</td>
-          </tr>`;
-        }).join('')}
-        </tbody>
-      </table></div>
-    </div>`;
+      <div class="scroll-x">
+        <table class="ptable" id="tbl_${cat.replace(/\s/g,'_')}">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width:28px"></th>
+              <th rowspan="2">Servizio / Accertamento</th>
+              <th rowspan="2" style="width:38px">U.M.</th>
+              <th colspan="3" style="text-align:center;border-right:2px solid rgba(255,255,255,.2)">ON SITE</th>
+              <th colspan="3" class="green-h" style="text-align:center">STUDIO</th>
+              <th rowspan="2" style="width:50px">Qtà</th>
+            </tr>
+            <tr>
+              <th style="width:74px">€ Listino</th>
+              <th style="width:66px">Sc. %</th>
+              <th style="width:78px;background:#1a5e35">✏️ Netto</th>
+              <th class="green-h" style="width:74px">€ Listino</th>
+              <th class="green-h" style="width:66px">Sc. %</th>
+              <th style="width:78px;background:#1a5e35">✏️ Netto</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${voci.map((v,vi)=>{
+              const ci=Object.keys(listino).indexOf(cat);
+              const dis=v.incluso||v.custom;
+              const nOS=v.prezzoOS?+(v.prezzoOS*(1-v.scontoOS/100)).toFixed(2):null;
+              const nST=v.prezzoST?+(v.prezzoST*(1-v.scontoST/100)).toFixed(2):null;
+              return `
+              <tr class="${v.sel?'sel':''}" id="row_${ci}_${vi}">
+                <td><input type="checkbox" ${v.sel?'checked':''} onchange="togVoce(${ci},${vi},this.checked)" style="width:15px;height:15px;cursor:pointer"></td>
+                <td>${v.nome}${v.per?` <span class="chip chip-green" style="margin-left:6px">${v.per}</span>`:''}</td>
+                <td style="font-size:11px;color:var(--ink3)">${v.um}</td>
+                ${dis?`<td colspan="6" style="text-align:center"><span class="chip ${v.incluso?'chip-green':'chip-gray'}">${v.incluso?'Incluso':'Su richiesta'}</span></td>`:`
+                <td class="nr price-ref">${v.prezzoOS?'€ '+v.prezzoOS.toFixed(2):'—'}</td>
+                <td>${v.prezzoOS?`<input class="pct-input" type="number" id="scOS_${ci}_${vi}" value="${v.scontoOS}" min="0" max="100" step="0.1" onchange="fromScOS(${ci},${vi},this.value)">` :'—'}</td>
+                <td style="background:var(--green-bg)">${v.prezzoOS?`<input class="net-input" type="number" id="nOS_${ci}_${vi}" value="${nOS}" min="0" step="0.01" onchange="fromNOS(${ci},${vi},this.value)">` :'—'}</td>
+                <td class="nr price-ref">${v.prezzoST?'€ '+v.prezzoST.toFixed(2):'—'}</td>
+                <td>${v.prezzoST?`<input class="pct-input" type="number" id="scST_${ci}_${vi}" value="${v.scontoST}" min="0" max="100" step="0.1" onchange="fromScST(${ci},${vi},this.value)">` :'—'}</td>
+                <td style="background:var(--green-bg)">${v.prezzoST?`<input class="net-input" type="number" id="nST_${ci}_${vi}" value="${nST}" min="0" step="0.01" onchange="fromNST(${ci},${vi},this.value)">` :'—'}</td>`}
+                <td><input class="qty-input" type="number" id="qty_${ci}_${vi}" value="${v.qty}" min="1" onchange="setQty(${ci},${vi},this.value)"></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    listinoWrap.appendChild(grp);
   }
-  content.innerHTML=html;
+  sec2.querySelector('.block-body').appendChild(listinoWrap);
+  el.appendChild(sec2);
+  calcTotale();
 }
-function toggleFormazione(){
-  document.getElementById('formazioneSection').style.display=
-    document.getElementById('inclFormazione').checked?'block':'none';
-}
-function selectFormCat(cat,checked){
-  DEFAULT_FORMAZIONE[cat].forEach(c=>c.sel=checked);buildFormazione();}
-function setFormSel(cat,ci,v){DEFAULT_FORMAZIONE[cat][ci].sel=v}
-function setFormSconto(cat,ci,v){DEFAULT_FORMAZIONE[cat][ci].sconto=parseFloat(v)||0;buildFormazione()}
-function setFormPartec(cat,ci,v){DEFAULT_FORMAZIONE[cat][ci].partec=parseInt(v)||1;buildFormazione()}
 
-// ═══════════════════════════════════════════════════════════
-// SUMMARY
-// ═══════════════════════════════════════════════════════════
-function updateSummary(){
-  const nLav=mansioni.reduce((a,m)=>a+m.n,0)||parseInt(document.getElementById('c_nlav').value)||0;
+function makeSectionBlock(ico,title,sub){
+  const d=document.createElement('div');
+  d.className='block';
+  d.style.marginBottom='20px';
+  d.innerHTML=`
+    <div class="block-head">
+      <span class="ico">${ico}</span>
+      <div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:''}</div>
+    </div>
+    <div class="block-body"></div>`;
+  return d;
+}
+
+// Bidirectional price/discount
+function getV(ci,vi){return Object.values(listino)[ci][vi]}
+function fromScOS(ci,vi,val){const v=getV(ci,vi);v.scontoOS=clamp(parseFloat(val)||0);const el=document.getElementById(`nOS_${ci}_${vi}`);if(el&&v.prezzoOS)el.value=+(v.prezzoOS*(1-v.scontoOS/100)).toFixed(2);calcTotale()}
+function fromNOS(ci,vi,val){const v=getV(ci,vi);if(!v.prezzoOS)return;const n=parseFloat(val)||0;v.scontoOS=clamp(+((1-n/v.prezzoOS)*100).toFixed(2));const el=document.getElementById(`scOS_${ci}_${vi}`);if(el)el.value=v.scontoOS;calcTotale()}
+function fromScST(ci,vi,val){const v=getV(ci,vi);v.scontoST=clamp(parseFloat(val)||0);const el=document.getElementById(`nST_${ci}_${vi}`);if(el&&v.prezzoST)el.value=+(v.prezzoST*(1-v.scontoST/100)).toFixed(2);calcTotale()}
+function fromNST(ci,vi,val){const v=getV(ci,vi);if(!v.prezzoST)return;const n=parseFloat(val)||0;v.scontoST=clamp(+((1-n/v.prezzoST)*100).toFixed(2));const el=document.getElementById(`scST_${ci}_${vi}`);if(el)el.value=v.scontoST;calcTotale()}
+function setQty(ci,vi,val){getV(ci,vi).qty=Math.max(1,parseInt(val)||1);calcTotale()}
+function clamp(n){return Math.min(100,Math.max(0,n))}
+function togVoce(ci,vi,checked){
+  getV(ci,vi).sel=checked;
+  const r=document.getElementById(`row_${ci}_${vi}`);if(r)r.className=checked?'sel':'';
+  calcTotale();
+}
+function selCat(cat,checked){
+  const ci=Object.keys(listino).indexOf(cat);
+  listino[cat].forEach((v,vi)=>{v.sel=checked;const r=document.getElementById(`row_${ci}_${vi}`);if(r)r.className=checked?'sel':'';});
+  calcTotale();
+}
+
+function calcTotale(){
   let lordo=0,netto=0,voci=0;
-  offerVoci.forEach(v=>{
-    if(v.incluso||v.custom)return;
-    const p=v.prezzoOS||v.prezzoST||0;
-    lordo+=p*v.qty;netto+=p*(1-v.sconto/100)*v.qty;voci++;
-  });
-  if(document.getElementById('inclFormazione').checked){
-    for(const corsi of Object.values(DEFAULT_FORMAZIONE)){
-      corsi.filter(c=>c.sel).forEach(c=>{
-        lordo+=c.prezzo*(c.partec||1);netto+=c.prezzo*(1-c.sconto/100)*(c.partec||1);voci++;
-      });
-    }
+  for(const vl of Object.values(listino)){
+    vl.filter(v=>v.sel&&!v.incluso&&!v.custom).forEach(v=>{
+      const p=(v.prezzoOS||v.prezzoST||0)*v.qty;
+      const sc=v.prezzoOS?v.scontoOS:v.scontoST;
+      lordo+=p;netto+=p*(1-sc/100);voci++;
+    });
   }
-  document.getElementById('sLav').textContent=nLav;
-  document.getElementById('sSedi').textContent=sedi.length;
-  document.getElementById('sVoci').textContent=voci;
-  document.getElementById('sLordo').textContent='€ '+lordo.toFixed(2);
-  document.getElementById('sSconto').textContent='€ '+(lordo-netto).toFixed(2);
-  document.getElementById('sNetto').textContent='€ '+netto.toFixed(2);
-  if(!document.getElementById('p_num').value){
-    const d=new Date();
-    document.getElementById('p_num').value=`DC-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-001`;
-  }
-  if(!document.getElementById('p_data').value)
-    document.getElementById('p_data').value=new Date().toISOString().split('T')[0];
+  const nLav=mansioni.reduce((a,m)=>a+m.n,0)||parseInt(V('c_nlav').value)||0;
+  V('tLav').textContent=nLav;
+  V('tVoci').textContent=voci;
+  V('tLordo').textContent='€ '+lordo.toFixed(2);
+  V('tSconto').textContent='€ '+(lordo-netto).toFixed(2);
+  V('tNetto').textContent='€ '+netto.toFixed(2);
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // PREVIEW
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 function showPreview(){
-  const rag=document.getElementById('c_rag').value||'—';
-  const sede=document.getElementById('c_sede').value||'';
-  const pNum=document.getElementById('p_num').value;
-  const pData=document.getElementById('p_data').value;
-  const tipo=document.getElementById('p_tipo').value;
+  const rag=V('c_rag').value||'—';
+  const pNum=V('p_num').value||'DC-001';
+  const pData=V('p_data').value;
+  const tipo=V('p_tipo').value;
+  const scelti=Object.values(listino).flat().filter(v=>v.sel);
   let html=`
-    <div style="font-size:13px;line-height:1.7;max-width:720px">
-      <p style="margin-bottom:4px"><strong>Spett.le</strong><br>${rag}<br>${sede}</p>
-      <p style="margin-top:14px;margin-bottom:20px">${document.getElementById('p_citta').value||'Milano'}, ${formatDate(pData)}</p>
-      <h2 style="font-size:16px;text-align:center;color:#002f5f;text-transform:uppercase;margin-bottom:6px">OFFERTA TECNICO–ECONOMICA ${new Date().getFullYear()}</h2>
-      <p style="text-align:center;color:#666;margin-bottom:24px">${tipo}</p>
-      <hr style="margin-bottom:20px">
-      <h3 style="color:#002f5f;font-size:13px;margin-bottom:10px">OFFERTA ECONOMICA</h3>`;
-
-  // Raggruppa voci per cat
-  const groups={};
-  offerVoci.forEach(v=>{if(!groups[v.cat])groups[v.cat]=[];groups[v.cat].push(v);});
-  let totNetto=0;
-  for(const [cat,voci] of Object.entries(groups)){
-    html+=`<p style="font-weight:700;margin-top:14px;margin-bottom:6px;font-size:12px;text-transform:uppercase;color:#555">${cat}</p>
-    <table style="width:100%;border-collapse:collapse;font-size:11.5px">
-    <thead><tr style="background:#002f5f;color:#fff">
-      <th style="padding:6px 8px;text-align:left">Servizio</th>
-      <th style="padding:6px 8px;text-align:center">Q.TÀ</th>
-      <th style="padding:6px 8px;text-align:right">PREZZO</th>
-    </tr></thead><tbody>`;
-    voci.forEach(v=>{
-      const p=v.incluso?'Incluso':v.custom?'Su richiesta':v.prezzoOS?'€ '+(v.prezzoOS*(1-v.sconto/100)).toFixed(2)+'  <span style="color:#d4880c">[ON SITE]</span>':'—';
-      const ps=v.prezzoST&&!v.incluso&&!v.custom?'€ '+(v.prezzoST*(1-v.sconto/100)).toFixed(2)+'  <span style="color:#555;font-size:10px">[Studio]</span>':'';
-      const tot=!v.incluso&&!v.custom&&(v.prezzoOS||v.prezzoST)?((v.prezzoOS||v.prezzoST)*(1-v.sconto/100)*v.qty):null;
-      if(tot)totNetto+=tot;
-      html+=`<tr style="border-bottom:1px solid #e2e8f0">
-        <td style="padding:6px 8px">${v.nome}${v.per?` <span style="font-size:10px;color:#1b6e36">[${v.per}]</span>`:''}</td>
-        <td style="padding:6px 8px;text-align:center">${v.qty}</td>
-        <td style="padding:6px 8px;text-align:right">${p}${ps?'<br>'+ps:''}</td>
-      </tr>`;
-    });
-    html+='</tbody></table>';
-  }
-
-  // Totale
-  html+=`<div style="margin-top:16px;padding:12px 16px;background:#002f5f;color:#fff;border-radius:6px;display:flex;justify-content:space-between;align-items:center">
-    <span style="font-weight:700;font-size:13px">TOTALE NETTO (IVA ESCLUSA)</span>
-    <span style="font-weight:700;font-size:18px;color:#f5c842">€ ${totNetto.toFixed(2)}</span>
-  </div>`;
+    <div style="max-width:700px;margin:0 auto;font-family:'Sora',sans-serif">
+      <div style="text-align:right;color:#666;font-size:12px;margin-bottom:16px">${V('p_citta').value||'Milano'}, ${fmtDate(pData)}</div>
+      <p style="margin-bottom:16px"><strong>Spett.le</strong><br><strong style="font-size:15px">${rag}</strong><br><span style="color:#666">${V('c_sede').value||''}</span></p>
+      <div style="text-align:center;margin:24px 0">
+        <div style="font-size:18px;font-weight:700;color:#0047ab;text-transform:uppercase">Offerta Tecnico–Economica ${new Date().getFullYear()}</div>
+        <div style="font-size:13px;color:#666;margin-top:4px">${tipo}</div>
+        <div style="font-size:12px;color:#999;margin-top:2px">Rif. ${pNum} &nbsp;·&nbsp; Validità ${V('p_val').value||30} giorni</div>
+      </div>
+      <hr style="border:none;border-top:2px solid #0047ab;margin:20px 0">`;
 
   // Mansioni
   if(mansioni.length){
-    html+=`<h3 style="color:#002f5f;font-size:13px;margin:20px 0 10px">MANSIONI E ACCERTAMENTI</h3>
-    <table style="width:100%;border-collapse:collapse;font-size:11.5px">
-    <thead><tr style="background:#002f5f;color:#fff">
-      <th style="padding:6px 8px;text-align:left">Mansione</th>
-      <th style="padding:6px 8px;text-align:center">Periodicità</th>
-      <th style="padding:6px 8px;text-align:left">Accertamenti</th>
-      <th style="padding:6px 8px;text-align:right">ON SITE</th>
-      <th style="padding:6px 8px;text-align:right">Studio</th>
-    </tr></thead><tbody>`;
-    mansioni.forEach(m=>{
-      const pkg=offerVoci.find(v=>v.cat==='PACCHETTI PER MANSIONE'&&v.nome.toLowerCase().includes(m.nome.split(' ')[0].toLowerCase()));
-      const pos=pkg?'€ '+pkg.prezzoOS.toFixed(2):'—';
-      const pst=pkg?'€ '+pkg.prezzoST.toFixed(2):'—';
-      html+=`<tr style="border-bottom:1px solid #e2e8f0">
-        <td style="padding:6px 8px"><strong>${m.nome}</strong><br><span style="color:#666;font-size:10px">${m.n} lavorator${m.n===1?'e':'i'}</span></td>
-        <td style="padding:6px 8px;text-align:center">${m.periodicita}</td>
-        <td style="padding:6px 8px">${m.accertamenti.join(', ')||'—'}</td>
-        <td style="padding:6px 8px;text-align:right">${pos}</td>
-        <td style="padding:6px 8px;text-align:right">${pst}</td>
-      </tr>`;
-    });
-    html+='</tbody></table>';
+    html+=`<h3 style="font-size:13px;font-weight:700;color:#0047ab;text-transform:uppercase;margin-bottom:10px">Mansioni & Accertamenti</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px">
+    <thead><tr style="background:#0047ab;color:#fff">
+      <th style="padding:7px 10px;text-align:left">Mansione</th>
+      <th style="padding:7px 10px;text-align:center">Periodicità</th>
+      <th style="padding:7px 10px;text-align:center">Lav.</th>
+      <th style="padding:7px 10px;text-align:left">Accertamenti</th>
+    </tr></thead><tbody>
+    ${mansioni.map((m,i)=>`
+      <tr style="background:${i%2?'#f8fafc':'#fff'};border-bottom:1px solid #e2e8f0">
+        <td style="padding:7px 10px"><strong>${m.nome}</strong></td>
+        <td style="padding:7px 10px;text-align:center">${m.per}</td>
+        <td style="padding:7px 10px;text-align:center">${m.n}</td>
+        <td style="padding:7px 10px">${m.accertamenti.join(', ')||'—'}${m.aiSuggested?' <em style="color:#b45309;font-size:10px">(AI)</em>':''}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
   }
 
-  // Sedi (Allegato A)
-  if(sedi.length){
-    html+=`<h3 style="color:#002f5f;font-size:13px;margin:20px 0 10px">ALLEGATO A — SEDI OPERATIVE</h3>
-    <table style="width:100%;border-collapse:collapse;font-size:11.5px">
-    <thead><tr style="background:#002f5f;color:#fff">
-      <th style="padding:6px 8px;text-align:left">Sede / Città</th>
-      <th style="padding:6px 8px;text-align:left">Mansioni</th>
-      <th style="padding:6px 8px;text-align:right">Tot. Lav.</th>
-    </tr></thead><tbody>`;
-    sedi.forEach(s=>{
-      html+=`<tr style="border-bottom:1px solid #e2e8f0">
-        <td style="padding:6px 8px"><strong>${s.citta}</strong></td>
-        <td style="padding:6px 8px">${s.mansioni.map(m=>`${m.nome} (${m.n})`).join(', ')}</td>
-        <td style="padding:6px 8px;text-align:right">${s.mansioni.reduce((a,m)=>a+m.n,0)}</td>
-      </tr>`;
-    });
-    html+='</tbody></table>';
+  // Offerta economica
+  if(scelti.length){
+    const groups={};
+    Object.entries(listino).forEach(([cat,voci])=>voci.filter(v=>v.sel).forEach(v=>{
+      if(!groups[cat])groups[cat]=[];groups[cat].push(v);
+    }));
+    let totNetto=0;
+    html+=`<h3 style="font-size:13px;font-weight:700;color:#0047ab;text-transform:uppercase;margin-bottom:10px">Offerta Economica</h3>`;
+    for(const[cat,voci] of Object.entries(groups)){
+      html+=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#475569;margin:14px 0 6px;letter-spacing:.06em">${cat}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px">
+      <thead><tr style="background:#f1f5f9">
+        <th style="padding:6px 8px;text-align:left;font-weight:600">Servizio</th>
+        <th style="padding:6px 8px;text-align:center;font-weight:600">Qtà</th>
+        <th style="padding:6px 8px;text-align:right;font-weight:600">€ ON SITE</th>
+        <th style="padding:6px 8px;text-align:right;font-weight:600">€ Studio</th>
+      </tr></thead><tbody>
+      ${voci.map(v=>{
+        const nOS=v.incluso?null:v.custom?null:v.prezzoOS?+(v.prezzoOS*(1-v.scontoOS/100)).toFixed(2):null;
+        const nST=v.incluso?null:v.custom?null:v.prezzoST?+(v.prezzoST*(1-v.scontoST/100)).toFixed(2):null;
+        if(nOS)totNetto+=nOS*v.qty; else if(nST)totNetto+=nST*v.qty;
+        return`<tr style="border-bottom:1px solid #e2e8f0">
+          <td style="padding:6px 8px">${v.nome}${v.per?` <span style="font-size:10px;color:#1a6b3a">[${v.per}]</span>`:''}</td>
+          <td style="padding:6px 8px;text-align:center">${v.qty}</td>
+          <td style="padding:6px 8px;text-align:right">${v.incluso?'Incluso':v.custom?'Su richiesta':nOS?'<strong>€ '+nOS.toFixed(2)+'</strong>':'—'}</td>
+          <td style="padding:6px 8px;text-align:right">${v.incluso?'':v.custom?'':nST?'€ '+nST.toFixed(2):'—'}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>`;
+    }
+    html+=`<div style="background:#0047ab;color:#fff;border-radius:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+      <span style="font-weight:600">TOTALE NETTO (IVA ESCLUSA)</span>
+      <span style="font-size:20px;font-weight:700;color:#fde68a">€ ${totNetto.toFixed(2)}</span>
+    </div>`;
   }
 
-  html+=`<div style="margin-top:24px;font-size:11px;color:#555;line-height:1.6">
-    <strong>TERMINI E CONDIZIONI:</strong><br>
-    ${document.getElementById('p_note').value.replace(/\n/g,'<br>')}
-  </div>
-  <div style="margin-top:24px;display:flex;gap:20px">
-    <div style="flex:1;border:1px solid #ccc;border-radius:6px;padding:14px;font-size:11px">
-      <strong>DELIVERY CARE S.r.l – S.B.</strong><br>Per accettazione<br><br><br><br>____________________
+  // Note
+  const note=V('p_note').value;
+  if(note){html+=`<div style="margin-top:20px;font-size:11.5px;color:#475569;line-height:1.7">${note.replace(/\n/g,'<br>')}</div>`;}
+
+  // Firme
+  html+=`<div style="margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="border:1px solid #cbd5e1;border-radius:8px;padding:16px">
+      <div style="font-weight:700;font-size:12px;margin-bottom:10px">DELIVERY CARE S.r.l – S.B.</div>
+      <div style="font-size:11px;color:#666">Per accettazione</div>
+      <div style="margin-top:30px;border-top:1px solid #ccc;padding-top:6px;font-size:11px;color:#999">Firma e timbro</div>
     </div>
-    <div style="flex:1;border:1px solid #ccc;border-radius:6px;padding:14px;font-size:11px">
-      <strong>${rag}</strong><br>Per accettazione<br><br><br><br>____________________
+    <div style="border:1px solid #cbd5e1;border-radius:8px;padding:16px">
+      <div style="font-weight:700;font-size:12px;margin-bottom:10px">${rag.toUpperCase()}</div>
+      <div style="font-size:11px;color:#666">Per accettazione</div>
+      <div style="margin-top:30px;border-top:1px solid #ccc;padding-top:6px;font-size:11px;color:#999">Luogo, data e firma</div>
     </div>
   </div></div>`;
 
   document.getElementById('prevBody').innerHTML=html;
-  document.getElementById('prevModal').classList.add('show');
+  document.getElementById('prevModal').classList.add('open');
 }
-function closeModal(){document.getElementById('prevModal').classList.remove('show')}
+function closePrev(){document.getElementById('prevModal').classList.remove('open')}
 
-// ═══════════════════════════════════════════════════════════
-// PDF GENERATION
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
+// PDF
+// ═══════════════════════════════════════
 function generatePDF(){
-  const {jsPDF}=window.jspdf;
+  const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const BLU=[0,47,95],GOLD=[212,136,12],GRAY=[71,85,104],LGRAY=[248,250,252],WHITE=[255,255,255],BLACK=[15,23,42];
-  const W=210,H=297,ML=14,MR=14;
-  let y=0;
+  const B=[0,71,171],G=[26,107,58],GD=[212,136,12],GR=[71,85,104],LB=[238,244,253],W=[255,255,255],BK=[13,27,42];
+  const PW=210,PH=297,ML=14,MR=14;let y=0;
 
-  function addPage(){doc.addPage();y=18;}
+  const newPage=()=>{doc.addPage();y=18;};
+  const sh=(title,yy)=>{
+    doc.setFillColor(...LB);doc.rect(ML,yy,PW-ML-MR,7.5,'F');
+    doc.setFillColor(...B);doc.rect(ML,yy,3.5,7.5,'F');
+    doc.setTextColor(...B);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text(title,ML+7,yy+5.3);
+    return yy+10;
+  };
 
-  // ── HEADER ──
-  doc.setFillColor(...BLU);doc.rect(0,0,W,38,'F');
-  doc.setFillColor(...GOLD);doc.roundedRect(ML,7,20,20,3,3,'F');
-  doc.setTextColor(...WHITE);doc.setFont('helvetica','bold');doc.setFontSize(11);
-  doc.text('DC',ML+10,19.5,{align:'center'});
-  doc.setFontSize(15);doc.text('DELIVERY CARE SRL',ML+25,15);
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(190,210,240);
-  doc.text('Società Benefit · Medicina del Lavoro e Sicurezza sul Lavoro',ML+25,21);
-  doc.text('info@deliverycare.it  ·  www.deliverycare.it  ·  P.IVA [INSERIRE]',ML+25,27);
+  // HEADER
+  doc.setFillColor(...B);doc.rect(0,0,PW,40,'F');
+  doc.setFillColor(...GD);doc.roundedRect(ML,7,22,22,3,3,'F');
+  doc.setTextColor(...W);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text('DC',ML+11,20.5,{align:'center'});
+  doc.setFontSize(16);doc.text('DELIVERY CARE SRL',ML+28,15);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(190,215,245);
+  doc.text('Società Benefit · Medicina del Lavoro e Sicurezza sul Lavoro',ML+28,21);
+  doc.text('info@deliverycare.it  ·  www.deliverycare.it',ML+28,27);
+  doc.setFillColor(...GD);doc.rect(PW-MR-52,7,52,16,'F');
+  doc.setTextColor(...W);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text('OFFERTA',PW-MR-26,14,{align:'center'});
+  doc.setFontSize(8);doc.text(V('p_num').value||'DC-001',PW-MR-26,19.5,{align:'center'});
+  y=48;
 
-  // Riquadro offerta (destra)
-  doc.setFillColor(...GOLD);doc.rect(W-MR-52,6,52,16,'F');
-  doc.setTextColor(...WHITE);doc.setFont('helvetica','bold');doc.setFontSize(10);
-  doc.text('OFFERTA',W-MR-26,13.5,{align:'center'});
-  doc.setFontSize(8);
-  doc.text(document.getElementById('p_num').value||'DC-001',W-MR-26,19,{align:'center'});
-
-  y=46;
-
-  // ── INTESTAZIONE ──
-  const rag=document.getElementById('c_rag').value||'—';
-  const pData=document.getElementById('p_data').value;
-  const citta=document.getElementById('p_citta').value||'Milano';
-  const tipo=document.getElementById('p_tipo').value;
-
-  doc.setTextColor(...BLACK);doc.setFont('helvetica','normal');doc.setFontSize(10);
+  // INTESTAZIONE CLIENTE
+  const rag=V('c_rag').value||'—';
+  const pData=V('p_data').value;
+  doc.setTextColor(...BK);doc.setFont('helvetica','normal');doc.setFontSize(10);
   doc.text('Spett.le',ML,y);y+=5;
-  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text(rag,ML,y);y+=5;
-  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);
-  const sede=document.getElementById('c_sede').value;
-  if(sede){doc.text(sede,ML,y);y+=5;}
-  doc.text(citta+', '+formatDate(pData),W-MR,y,{align:'right'});y+=10;
+  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text(rag,ML,y);y+=5;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GR);
+  if(V('c_sede').value){doc.text(V('c_sede').value,ML,y);y+=5;}
+  doc.text((V('p_citta').value||'Milano')+', '+fmtDate(pData),PW-MR,y-5,{align:'right'});
+  y+=6;
+  doc.setTextColor(...B);doc.setFont('helvetica','bold');doc.setFontSize(13);
+  doc.text(('OFFERTA TECNICO–ECONOMICA '+new Date().getFullYear()).toUpperCase(),PW/2,y,{align:'center'});y+=6;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GR);
+  doc.text(V('p_tipo').value,PW/2,y,{align:'center'});y+=4;
+  doc.text('Validità: '+V('p_val').value+' giorni  ·  Redatto da: '+(V('p_redattore').value||'—'),PW/2,y,{align:'center'});
+  y+=8;doc.setDrawColor(...B);doc.setLineWidth(.5);doc.line(ML,y,PW-MR,y);y+=8;
 
-  // Titolo offerta
-  doc.setTextColor(...BLU);doc.setFont('helvetica','bold');doc.setFontSize(13);
-  doc.text(('OFFERTA TECNICO–ECONOMICA '+new Date().getFullYear()).toUpperCase(),W/2,y,{align:'center'});y+=6;
-  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);
-  doc.text(tipo,W/2,y,{align:'center'});y+=10;
-
-  doc.setDrawColor(...BLU);doc.setLineWidth(.4);doc.line(ML,y,W-MR,y);y+=8;
-
-  // ── PREMESSA (breve) ──
-  sectionHeader(doc,'PREMESSA',ML,y,W,BLU,LGRAY);y+=9;
-  const premessa=`Il Dipartimento di Medicina del Lavoro di Delivery Care, grazie all'esperienza ventennale del proprio Medico Coordinatore ed una Segreteria organizzativa totalmente digitalizzata, è in grado di assistere le Aziende nella salvaguardia della salute dei propri Lavoratori.\nGrazie al nostro Portale Aziendale, il datore di lavoro potrà sempre monitorare lo stato di avanzamento delle Visite, le convocazioni, le idoneità e gli scadenziari in tempo reale.`;
-  doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(8.5);
-  const pLines=doc.splitTextToSize(premessa,W-ML-MR);
-  pLines.forEach(l=>{doc.text(l,ML,y);y+=4.5;});y+=4;
-
-  // ── OFFERTA ECONOMICA ──
-  if(y>H-50){addPage();}
-  sectionHeader(doc,'OFFERTA ECONOMICA',ML,y,W,BLU,LGRAY);y+=10;
-
-  const groups={};
-  offerVoci.forEach(v=>{if(!groups[v.cat])groups[v.cat]=[];groups[v.cat].push(v);});
-  let totLordo=0,totNetto=0;
-
-  for(const [cat,voci] of Object.entries(groups)){
-    if(y>H-55){addPage();}
-    // Sub-header categoria
-    doc.setFillColor(220,232,247);doc.rect(ML,y,W-ML-MR,6.5,'F');
-    doc.setTextColor(...BLU);doc.setFont('helvetica','bold');doc.setFontSize(8);
-    doc.text(cat,ML+3,y+4.5);y+=8;
-
-    const tableData=voci.map(v=>{
-      const po=v.incluso?null:v.custom?null:v.prezzoOS?v.prezzoOS*(1-v.sconto/100):null;
-      const ps=v.incluso?null:v.custom?null:v.prezzoST?v.prezzoST*(1-v.sconto/100):null;
-      if(po){totLordo+=v.prezzoOS*v.qty;totNetto+=po*v.qty;}
-      else if(ps){totLordo+=v.prezzoST*v.qty;totNetto+=ps*v.qty;}
-      return [
-        v.nome+(v.per?' ['+v.per+']':''),
-        v.um,
-        v.qty,
-        po?'€ '+po.toFixed(2):v.incluso?'Incluso':v.custom?'Su richiesta':'—',
-        ps?'€ '+ps.toFixed(2):v.incluso?'':v.custom?'':'—',
-        !v.incluso&&!v.custom&&(po||ps)?'€ '+((po||ps)*v.qty).toFixed(2):'',
-      ];
-    });
-
-    doc.autoTable({
-      startY:y,
-      head:[['Servizio / Accertamento','U.M.','Q.tà','€ ON SITE','€ Studio','Totale']],
-      body:tableData,
-      theme:'grid',
-      headStyles:{fillColor:BLU,textColor:WHITE,fontSize:7.5,fontStyle:'bold',cellPadding:3},
-      bodyStyles:{fontSize:8,textColor:BLACK,cellPadding:3},
-      alternateRowStyles:{fillColor:[248,251,255]},
-      columnStyles:{0:{cellWidth:65},1:{cellWidth:18},2:{cellWidth:12,halign:'center'},3:{cellWidth:22,halign:'right'},4:{cellWidth:22,halign:'right'},5:{cellWidth:22,halign:'right',fontStyle:'bold'}},
-      margin:{left:ML,right:MR}
-    });
-    y=doc.lastAutoTable.finalY+5;
-  }
-
-  // Totale finale
-  if(y>H-35){addPage();}
-  doc.setFillColor(...BLU);doc.rect(ML,y,W-ML-MR,14,'F');
-  doc.setTextColor(...WHITE);doc.setFont('helvetica','bold');doc.setFontSize(9);
-  doc.text('TOTALE LORDO (IVA ESCLUSA)',ML+3,y+5.5);
-  doc.text('€ '+totLordo.toFixed(2),W-MR-3,y+5.5,{align:'right'});
-  doc.setFontSize(8);doc.setTextColor(255,230,150);
-  doc.text('Sconto totale: € '+(totLordo-totNetto).toFixed(2),ML+3,y+11);
-  doc.setFontSize(11);doc.setTextColor(...WHITE);
-  doc.text('TOTALE NETTO: € '+totNetto.toFixed(2),W-MR-3,y+11,{align:'right'});
-  y+=18;
-
-  // ── MANSIONI ──
+  // MANSIONI
   if(mansioni.length){
-    if(y>H-60){addPage();}
-    sectionHeader(doc,'MANSIONI E ACCERTAMENTI SANITARI',ML,y,W,BLU,LGRAY);y+=10;
-    const mData=mansioni.map(m=>[m.nome,m.periodicita,String(m.n),m.accertamenti.join(', ')||'—']);
-    doc.autoTable({
-      startY:y,
-      head:[['Mansione','Periodicità','N° Lav.','Accertamenti sanitari']],
-      body:mData,
+    if(y>PH-60)newPage();
+    y=sh('MANSIONI E ACCERTAMENTI SANITARI',y);
+    doc.autoTable({startY:y,
+      head:[['Mansione','Periodicità','N° Lav.','Accertamenti']],
+      body:mansioni.map(m=>[m.nome,m.per,m.n,m.accertamenti.join(', ')||'—'+(m.aiSuggested?' (AI)':'')]),
       theme:'grid',
-      headStyles:{fillColor:BLU,textColor:WHITE,fontSize:7.5,fontStyle:'bold',cellPadding:3},
-      bodyStyles:{fontSize:8,textColor:BLACK,cellPadding:3},
+      headStyles:{fillColor:B,textColor:W,fontSize:7.5,fontStyle:'bold',cellPadding:3},
+      bodyStyles:{fontSize:8,textColor:BK,cellPadding:3},
       alternateRowStyles:{fillColor:[248,251,255]},
-      columnStyles:{0:{cellWidth:45},1:{cellWidth:22,halign:'center'},2:{cellWidth:15,halign:'center'},3:{cellWidth:98}},
-      margin:{left:ML,right:MR}
-    });
-    y=doc.lastAutoTable.finalY+5;
+      columnStyles:{0:{cellWidth:42},1:{cellWidth:22,halign:'center'},2:{cellWidth:14,halign:'center'},3:{cellWidth:100}},
+      margin:{left:ML,right:MR}});
+    y=doc.lastAutoTable.finalY+6;
   }
 
-  // ── FORMAZIONE ──
-  if(document.getElementById('inclFormazione').checked){
-    if(y>H-60){addPage();}
-    sectionHeader(doc,'FORMAZIONE',ML,y,W,BLU,LGRAY);y+=10;
-    const fData=[];
-    for(const [cat,corsi] of Object.entries(DEFAULT_FORMAZIONE)){
-      corsi.filter(c=>c.sel).forEach(c=>{
-        fData.push([c.nome,cat.replace('FORMAZIONE – ',''),c.modalita,c.ore+'h','€ '+(c.prezzo*(1-c.sconto/100)).toFixed(2),c.partec||1,'€ '+(c.prezzo*(1-c.sconto/100)*(c.partec||1)).toFixed(2)]);
+  // OFFERTA ECONOMICA
+  const groups={};
+  Object.entries(listino).forEach(([cat,voci])=>voci.filter(v=>v.sel).forEach(v=>{
+    if(!groups[cat])groups[cat]=[];groups[cat].push(v);
+  }));
+  if(Object.keys(groups).length){
+    if(y>PH-60)newPage();
+    y=sh('OFFERTA ECONOMICA',y);
+    let totL=0,totN=0;
+    for(const[cat,voci] of Object.entries(groups)){
+      if(y>PH-50)newPage();
+      doc.setFillColor(220,232,248);doc.rect(ML,y,PW-ML-MR,6,'F');
+      doc.setTextColor(...B);doc.setFont('helvetica','bold');doc.setFontSize(8);
+      doc.text(cat.toUpperCase(),ML+4,y+4.2);y+=8;
+      const rows=voci.map(v=>{
+        const nOS=v.incluso?null:v.custom?null:v.prezzoOS?+(v.prezzoOS*(1-v.scontoOS/100)).toFixed(2):null;
+        const nST=v.incluso?null:v.custom?null:v.prezzoST?+(v.prezzoST*(1-v.scontoST/100)).toFixed(2):null;
+        if(nOS){totL+=v.prezzoOS*v.qty;totN+=nOS*v.qty;}
+        else if(nST){totL+=v.prezzoST*v.qty;totN+=nST*v.qty;}
+        return[
+          v.nome+(v.per?' ['+v.per+']':''),
+          v.um,v.qty,
+          v.incluso?'Incluso':v.custom?'Su richiesta':nOS?'€ '+nOS.toFixed(2):'—',
+          v.incluso?'':v.custom?'':nST?'€ '+nST.toFixed(2):'—',
+        ];
       });
-    }
-    if(fData.length){
-      doc.autoTable({
-        startY:y,
-        head:[['Corso','Mansione','Modalità','Ore','€/pax','Partec.','Totale']],
-        body:fData,
-        theme:'grid',
-        headStyles:{fillColor:BLU,textColor:WHITE,fontSize:7.5,fontStyle:'bold',cellPadding:3},
-        bodyStyles:{fontSize:8,textColor:BLACK,cellPadding:3},
+      doc.autoTable({startY:y,
+        head:[['Servizio','U.M.','Qtà','€ ON SITE','€ Studio']],
+        body:rows,theme:'grid',
+        headStyles:{fillColor:B,textColor:W,fontSize:7,fontStyle:'bold',cellPadding:2.5},
+        bodyStyles:{fontSize:8,textColor:BK,cellPadding:2.5},
         alternateRowStyles:{fillColor:[248,251,255]},
-        columnStyles:{0:{cellWidth:60},1:{cellWidth:28},2:{cellWidth:22},3:{cellWidth:12,halign:'center'},4:{cellWidth:18,halign:'right'},5:{cellWidth:12,halign:'center'},6:{cellWidth:18,halign:'right',fontStyle:'bold'}},
-        margin:{left:ML,right:MR}
-      });
-      y=doc.lastAutoTable.finalY+5;
+        columnStyles:{0:{cellWidth:72},1:{cellWidth:16},2:{cellWidth:12,halign:'center'},3:{cellWidth:28,halign:'right'},4:{cellWidth:28,halign:'right'}},
+        margin:{left:ML,right:MR}});
+      y=doc.lastAutoTable.finalY+4;
     }
+    // Totale
+    if(y>PH-25)newPage();
+    doc.setFillColor(...B);doc.rect(ML,y,PW-ML-MR,14,'F');
+    doc.setTextColor(...W);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('TOTALE LORDO',ML+4,y+5.5);doc.text('€ '+totL.toFixed(2),PW-MR-4,y+5.5,{align:'right'});
+    doc.setFontSize(7.5);doc.setTextColor(253,230,138);
+    doc.text('Sconto: € '+(totL-totN).toFixed(2),ML+4,y+11);
+    doc.setFontSize(11);doc.setTextColor(...W);
+    doc.text('TOTALE NETTO: € '+totN.toFixed(2),PW-MR-4,y+11,{align:'right'});
+    y+=18;
   }
 
-  // ── SEDI (ALLEGATO A) ──
-  if(sedi.length){
-    if(y>H-60){addPage();}
-    sectionHeader(doc,'ALLEGATO A — SEDI OPERATIVE',ML,y,W,BLU,LGRAY);y+=10;
-    const sData=[];
-    sedi.forEach(s=>{
-      s.mansioni.forEach((m,mi)=>{
-        sData.push([mi===0?s.citta:'',m.nome,m.n]);
-      });
-      sData.push([{content:'TOTALE '+s.citta,colSpan:2,styles:{fontStyle:'bold'}},s.mansioni.reduce((a,m)=>a+m.n,0)]);
-    });
-    doc.autoTable({
-      startY:y,head:[['Sede / Città','Mansione','N° Lav.']],body:sData,
+  // SEDI (allegato A)
+  if(document.getElementById('isMultisede').checked&&sedi.length){
+    if(y>PH-60)newPage();
+    y=sh('ALLEGATO A — SEDI OPERATIVE',y);
+    const rows=[];
+    sedi.forEach(s=>s.rows.forEach((r,ri)=>{
+      rows.push([ri===0?s.citta:'',r.mansione,r.n]);
+    }));
+    doc.autoTable({startY:y,head:[['Sede / Città','Mansione','N° Lav.']],body:rows,
       theme:'grid',
-      headStyles:{fillColor:BLU,textColor:WHITE,fontSize:7.5,fontStyle:'bold',cellPadding:3},
-      bodyStyles:{fontSize:8,textColor:BLACK,cellPadding:3},
-      columnStyles:{0:{cellWidth:50},1:{cellWidth:100},2:{cellWidth:30,halign:'right'}},
-      margin:{left:ML,right:MR}
-    });
-    y=doc.lastAutoTable.finalY+5;
+      headStyles:{fillColor:B,textColor:W,fontSize:7.5,fontStyle:'bold',cellPadding:3},
+      bodyStyles:{fontSize:8,textColor:BK,cellPadding:3},
+      columnStyles:{0:{cellWidth:50},1:{cellWidth:110},2:{cellWidth:20,halign:'right'}},
+      margin:{left:ML,right:MR}});
+    y=doc.lastAutoTable.finalY+6;
   }
 
-  // ── TERMINI E CONDIZIONI ──
-  if(y>H-70){addPage();}
-  sectionHeader(doc,'TERMINI E CONDIZIONI',ML,y,W,BLU,LGRAY);y+=9;
-  const terms=[
-    ['Decorrenza incarico',document.getElementById('p_dec').value||'Da concordare'],
-    ['Durata',document.getElementById('p_dur').value||'Annuale'],
-    ['Area di competenza',document.getElementById('p_area').value||'—'],
-    ['Penali visite ON SITE',document.getElementById('p_penale_os').value],
-    ['Penali visite c/o studi',document.getElementById('p_penale_st').value],
-    ['Disdetta contratto',document.getElementById('p_disdetta').value],
-    ['Fatturazione',document.getElementById('p_fatt').value],
-    ['Pagamento',document.getElementById('p_pag').value],
-    ['Prezzi','IVA esclusa'],
-    ['Validità offerta',document.getElementById('p_val').value+' giorni dalla data di emissione'],
-  ];
-  const note=document.getElementById('p_note').value;
+  // NOTE
+  const note=V('p_note').value;
   if(note){
-    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...GRAY);
-    const nl=doc.splitTextToSize(note,W-ML-MR);
-    nl.forEach(l=>{if(y>H-25){addPage();}doc.text(l,ML,y);y+=4.5;});y+=3;
+    if(y>PH-50)newPage();
+    y=sh('NOTE E CONDIZIONI DI FORNITURA',y);
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...GR);
+    doc.splitTextToSize(note,PW-ML-MR).forEach(l=>{if(y>PH-20)newPage();doc.text(l,ML,y);y+=4.5;});
+    y+=4;
   }
-  doc.autoTable({
-    startY:y,body:terms,
-    theme:'plain',
-    bodyStyles:{fontSize:8,textColor:BLACK,cellPadding:2.5},
-    columnStyles:{0:{cellWidth:50,fontStyle:'bold',textColor:BLU},1:{cellWidth:125}},
-    margin:{left:ML,right:MR}
+
+  // FIRME
+  if(y>PH-40)newPage();
+  const bw=(PW-ML-MR-10)/2;
+  doc.setDrawColor(...GR);
+  [[ML,'DELIVERY CARE S.r.l – S.B.'],[ML+bw+10,rag.substring(0,32)]].forEach(([x,name])=>{
+    doc.rect(x,y,bw,28);
+    doc.setTextColor(...B);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(name,x+3,y+6);
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...GR);
+    doc.text('Per accettazione',x+3,y+12);doc.text('Firma e timbro:',x+3,y+22);
   });
-  y=doc.lastAutoTable.finalY+8;
 
-  // ── FIRMA ──
-  if(y>H-40){addPage();}
-  const bw=(W-ML-MR-10)/2;
-  doc.setDrawColor(...GRAY);doc.rect(ML,y,bw,28);
-  doc.setTextColor(...BLU);doc.setFont('helvetica','bold');doc.setFontSize(8);
-  doc.text('DELIVERY CARE S.r.l – S.B.',ML+3,y+6);
-  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...GRAY);
-  const red=document.getElementById('p_redattore').value;
-  if(red)doc.text('Redatto da: '+red,ML+3,y+11);
-  doc.text('Firma e timbro:',ML+3,y+21);
-  doc.rect(ML+bw+10,y,bw,28);
-  doc.setTextColor(...BLU);doc.setFont('helvetica','bold');doc.setFontSize(8);
-  doc.text(rag.substring(0,35).toUpperCase(),ML+bw+13,y+6);
-  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...GRAY);
-  doc.text('Per accettazione — luogo e data:',ML+bw+13,y+11);
-  doc.text('Firma legale rappresentante:',ML+bw+13,y+17);
-
-  // ── FOOTER ogni pagina ──
+  // FOOTER
   const tot=doc.internal.getNumberOfPages();
   for(let i=1;i<=tot;i++){
     doc.setPage(i);
-    doc.setFillColor(...BLU);doc.rect(0,H-10,W,10,'F');
-    doc.setTextColor(160,195,235);doc.setFont('helvetica','normal');doc.setFontSize(6.5);
-    doc.text('Delivery Care Srl – Società Benefit  |  Medicina del Lavoro e Sicurezza  |  info@deliverycare.it  |  www.deliverycare.it',W/2,H-4.5,{align:'center'});
-    doc.text(`Pag. ${i}/${tot}`,W-MR,H-4.5,{align:'right'});
+    doc.setFillColor(...B);doc.rect(0,PH-10,PW,10,'F');
+    doc.setTextColor(160,200,240);doc.setFont('helvetica','normal');doc.setFontSize(6.5);
+    doc.text('Delivery Care Srl – Società Benefit  |  Medicina del Lavoro e Sicurezza  |  info@deliverycare.it  |  www.deliverycare.it',PW/2,PH-4.5,{align:'center'});
+    doc.text(`Pag. ${i}/${tot}`,PW-MR,PH-4.5,{align:'right'});
   }
 
-  const fname=`Offerta_${rag.replace(/[^a-zA-Z0-9]/g,'_')}_${document.getElementById('p_num').value||'DC'}.pdf`;
-  doc.save(fname);
+  doc.save(`Offerta_${rag.replace(/[^a-zA-Z0-9]/g,'_')}_${V('p_num').value||'DC'}.pdf`);
 }
 
-function sectionHeader(doc,title,ml,y,W,BLU,LGRAY){
-  doc.setFillColor(...LGRAY);doc.rect(ml,y,W-ml-14,7,'F');
-  doc.setFillColor(...BLU);doc.rect(ml,y,3,7,'F');
-  doc.setTextColor(...BLU);doc.setFont('helvetica','bold');doc.setFontSize(9);
-  doc.text(title,ml+6,y+5);
-}
-
-// ═══════════════════════════════════════════════════════════
-// GEMINI API  (gratuita — tier free: 15 req/min, 1500/giorno)
-// Sostituisci GEMINI_API_KEY con la tua chiave da:
-// https://aistudio.google.com/app/apikey
-// ═══════════════════════════════════════════════════════════
-const GEMINI_API_KEY = 'AIzaSyDfiPX2ZgZ8WVJhyDpgc2WnDKKdAoizEmY';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-async function callAI(prompt, base64PDF=null){
-  const parts = [];
-  if(base64PDF){
-    parts.push({inlineData:{mimeType:'application/pdf',data:base64PDF}});
-  }
-  parts.push({text: prompt});
-
-  const body = {
-    contents:[{parts}],
-    generationConfig:{temperature:0.1, maxOutputTokens:1500}
-  };
-
-  const res = await fetch(GEMINI_URL,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(body)
+// ═══════════════════════════════════════
+// GEMINI API
+// ═══════════════════════════════════════
+function getGemKey(){return 'AIzaSyDfiPX2ZgZ8WVJhyDpgc2WnDKKdAoizEmY'}
+async function callAI(prompt,b64pdf=null,text=null){
+  const k=getGemKey();
+  const parts=[];
+  if(b64pdf)parts.push({inlineData:{mimeType:'application/pdf',data:b64pdf}});
+  if(text)parts.push({text:text});
+  parts.push({text:prompt});
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${k}`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.1,maxOutputTokens:2000}})
   });
-  if(!res.ok){
-    const e=await res.json().catch(()=>({}));
-    throw new Error(e.error?.message||'Errore Gemini API: '+res.status);
-  }
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Errore Gemini '+r.status);}
+  const d=await r.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // UI HELPERS
-// ═══════════════════════════════════════════════════════════
-function showLoading(msg){document.getElementById('loadingMsg').textContent=msg;document.getElementById('loadingOverlay').classList.add('show')}
-function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
-function flash(msg,type,pageId){
-  const page=document.getElementById(pageId);if(!page)return;
-  const d=document.createElement('div');d.className=`alert alert-${type}`;d.innerHTML=msg;
-  page.querySelector('.card-b').insertBefore(d,page.querySelector('.card-b').firstChild);
-  setTimeout(()=>d.remove(),6000);
+// ═══════════════════════════════════════
+const V=id=>document.getElementById(id);
+function showLoader(msg){V('loaderMsg').textContent=msg;V('loader').classList.add('show')}
+function hideLoader(){V('loader').classList.remove('show')}
+function flash(msg,type,pid){
+  const p=V(pid);if(!p)return;
+  const d=document.createElement('div');
+  d.className='alert alert-'+type;d.innerHTML=msg;
+  p.insertBefore(d,p.firstChild);
+  setTimeout(()=>d.remove(),7000);
 }
-function formatDate(s){if(!s)return '';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`}
+function fmtDate(s){if(!s)return'';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`}
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
-  renderMansioni();renderSedi();
-  loadDefaultListino();
-  document.getElementById('p_note').value=`I prezzi si intendono IVA esclusa al 22%.
-Validità offerta: come indicato in intestazione.
-Le visite ON SITE sono erogate per gruppi omogenei ≥ 15-20 lavoratori per giornata.
-Convocazioni a cura di Delivery Care tramite e-mail e SMS con preavviso minimo 20 giorni.
-Giudizi di idoneità inviati al lavoratore entro 3 giorni lavorativi dalla visita.
+  initListino();
+  renderMans();
+  V('p_data').value=new Date().toISOString().split('T')[0];
+  const d=new Date();
+  V('p_num').value=`DC-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-001`;
+  V('p_note').value=`I prezzi si intendono IVA esclusa al 22%.
+Le visite ON SITE sono erogate per gruppi omogenei ≥ 15 lavoratori per giornata.
+Convocazioni a cura di Delivery Care tramite e-mail/SMS con preavviso minimo 20 giorni.
+Giudizi di idoneità inviati entro 3 giorni lavorativi dalla visita.
 Reportistica mensile sull'andamento delle visite (convocati/presentati).
-Documentazione necessaria: DVR, organigramma sicurezza, elenco lavoratori/mansioni.
+Documentazione necessaria: DVR, organigramma sicurezza, elenco lavoratori e mansioni.
 Gestione dati nel rispetto del GDPR e normativa privacy vigente.`;
 });
 </script>
