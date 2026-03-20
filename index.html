@@ -1,3 +1,25 @@
+<!-- MODALE API KEY -->
+<div id="apiModal" style="display:none;position:fixed;inset:0;background:rgba(13,27,42,.55);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:12px;padding:32px 36px;max-width:460px;width:100%;box-shadow:0 8px 40px rgba(13,27,42,.2)">
+    <h3 style="font-size:16px;font-weight:600;color:#0d1b2a;margin-bottom:6px">🔑 Chiave API Gemini</h3>
+    <p style="font-size:12.5px;color:#7a90a4;margin-bottom:20px;line-height:1.6">
+      La chiave viene salvata solo nel tuo browser e non è nel codice.<br>
+      Ottienila gratis su <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#0047ab">aistudio.google.com</a>
+    </p>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input type="password" id="keyInp" placeholder="AIzaSy..." 
+        style="flex:1;border:1.5px solid #dde4ed;border-radius:6px;padding:9px 12px;font-size:13px;font-family:'JetBrains Mono',monospace">
+      <button onclick="document.getElementById('keyInp').type=document.getElementById('keyInp').type==='password'?'text':'password'" 
+        style="background:#f7f9fc;border:1.5px solid #dde4ed;border-radius:6px;padding:9px 12px;cursor:pointer;font-size:14px">👁</button>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="saveApiKey()" style="flex:1;background:#0047ab;color:#fff;border:none;border-radius:6px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif">💾 Salva</button>
+      <button onclick="document.getElementById('apiModal').style.display='none'" style="background:#f7f9fc;border:1.5px solid #dde4ed;border-radius:6px;padding:10px 18px;font-size:13px;cursor:pointer;font-family:'Sora',sans-serif">Annulla</button>
+    </div>
+    <div id="keyMsg" style="margin-top:12px;font-size:12px;min-height:16px"></div>
+  </div>
+</div>
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -1292,17 +1314,46 @@ function generatePDF(){
   doc.save(`Offerta_${rag.replace(/[^a-zA-Z0-9]/g,'_')}_${V('p_num').value||'DC'}.pdf`);
 }
 
+
+// ═══════════════════════════════════════
+// API KEY MODAL
+// ═══════════════════════════════════════
+function openApiModal(){
+  document.getElementById('keyInp').value=getGemKey();
+  document.getElementById('keyMsg').textContent='';
+  document.getElementById('apiModal').style.display='flex';
+}
+async function saveApiKey(){
+  const k=document.getElementById('keyInp').value.trim();
+  if(!k){document.getElementById('keyMsg').innerHTML='<span style="color:#c0392b">⚠️ Inserisci una chiave</span>';return;}
+  document.getElementById('keyMsg').innerHTML='<span style="color:#7a90a4">🔄 Verifica...</span>';
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${k}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:'OK'}]}],generationConfig:{maxOutputTokens:5}})
+    });
+    if(r.ok){
+      localStorage.setItem('dc_gemini_key',k);
+      document.getElementById('keyMsg').innerHTML='<span style="color:#1a6b3a">✅ Chiave valida e salvata!</span>';
+      setTimeout(()=>document.getElementById('apiModal').style.display='none',1200);
+    }else{
+      const e=await r.json().catch(()=>({}));
+      document.getElementById('keyMsg').innerHTML=`<span style="color:#c0392b">❌ ${e.error?.message||'Chiave non valida'}</span>`;
+    }
+  }catch(e){document.getElementById('keyMsg').innerHTML=`<span style="color:#c0392b">❌ ${e.message}</span>`;}
+}
+
 // ═══════════════════════════════════════
 // GEMINI API
 // ═══════════════════════════════════════
-function getGemKey(){return 'AIzaSyC9nYjh0NHldbqSj7hEwmdJY-slDBlzhUE'}
+function getGemKey(){return 'AIzaSyDSOCAC7v_9-1QyBWDeziqhKEqttaF91yU'}
 async function callAI(prompt,b64pdf=null,text=null){
   const k=getGemKey();
   const parts=[];
   if(b64pdf)parts.push({inlineData:{mimeType:'application/pdf',data:b64pdf}});
   if(text)parts.push({text:text});
   parts.push({text:prompt});
- const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${k}`,{
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${k}`,{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.1,maxOutputTokens:2000}})
   });
