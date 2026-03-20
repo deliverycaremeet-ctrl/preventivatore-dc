@@ -379,7 +379,9 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--ink);min-hei
       <div class="tb-sub">Delivery Care · Medicina del Lavoro</div>
     </div>
   </div>
-
+  <button onclick="openApiModal()" id="apiBtn" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Sora',sans-serif">
+    ⚙️ <span id="apiBtnLabel">API Key</span>
+  </button>
 </div>
 
 <!-- PAGER -->
@@ -1335,6 +1337,7 @@ async function saveApiKey(){
     if(r.ok){
       localStorage.setItem('dc_gemini_key',k);
       document.getElementById('keyMsg').innerHTML='<span style="color:#1a6b3a">✅ Chiave valida e salvata!</span>';
+      const lbl=document.getElementById('apiBtnLabel');if(lbl)lbl.textContent='✅ API attiva';
       setTimeout(()=>document.getElementById('apiModal').style.display='none',1200);
     }else{
       const e=await r.json().catch(()=>({}));
